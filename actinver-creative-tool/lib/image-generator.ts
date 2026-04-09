@@ -1,8 +1,8 @@
 // Generación / búsqueda de imagen de fondo para piezas Actinver
 //
-// DOS PROVEEDORES:
+// PROVEEDORES:
 //   generateImageFromPexels → búsqueda de stock (Pexels)
-//   generateImageWithAI     → generación con IA (Pollinations Flux)
+//   generateImageWithAI     → fal.ai Flux Pro 1.1 Ultra (máxima calidad)
 
 import OpenAI from "openai";
 import { buildAIPrompt } from "./gemini";
@@ -87,39 +87,59 @@ Rules:
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PEXELS — búsqueda de stock photography con deduplicación
+// PEXELS — búsqueda de stock photography con deduplicación y fallbacks
 // ─────────────────────────────────────────────────────────────────────────────
-export async function generateImageFromPexels(params: ImageParams): Promise<ImageResult> {
-  const apiKey = process.env.PEXELS_API_KEY;
-  if (!apiKey) throw new Error("PEXELS_API_KEY no está configurada en .env.local");
 
-  const query = await resolveSearchQuery(params.product, params.content);
+type PexelsPhoto = {
+  id: number;
+  src: { large2x: string; large: string };
+  photographer: string;
+  photographer_url: string;
+};
+
+async function searchPexels(query: string, apiKey: string, excludeIds: Set<string>): Promise<PexelsPhoto | null> {
   const page = Math.floor(Math.random() * 3) + 1;
   console.log(`[pexels] query: "${query}" page: ${page}`);
 
   const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&orientation=square&size=large&per_page=40&page=${page}`;
   const res = await fetch(url, { headers: { Authorization: apiKey } });
-  if (!res.ok) throw new Error(`Pexels error ${res.status}`);
+  if (!res.ok) return null;
 
-  const data = await res.json() as {
-    photos: Array<{
-      id: number;
-      src: { large2x: string; large: string };
-      photographer: string;
-      photographer_url: string;
-    }>;
-  };
+  const data = await res.json() as { photos: PexelsPhoto[] };
+  if (!data.photos?.length) return null;
 
-  if (!data.photos?.length) throw new Error(`No se encontraron imágenes para: "${query}"`);
-
-  // Filtrar fotos ya vistas en esta sesión
-  const excludeSet = new Set(params.excludeIds ?? []);
-  let candidates = data.photos.filter((p) => !excludeSet.has(String(p.id)));
-
-  // Si todas están excluidas, usar el set completo como fallback
+  let candidates = data.photos.filter((p) => !excludeIds.has(String(p.id)));
   if (!candidates.length) candidates = data.photos;
 
-  const pick = candidates[Math.floor(Math.random() * candidates.length)];
+  return candidates[Math.floor(Math.random() * candidates.length)];
+}
+
+export async function generateImageFromPexels(params: ImageParams): Promise<ImageResult> {
+  const apiKey = process.env.PEXELS_API_KEY;
+  if (!apiKey) throw new Error("PEXELS_API_KEY no está configurada en .env.local");
+
+  const excludeSet = new Set(params.excludeIds ?? []);
+
+  // Intento 1: query generada por Groq basada en el producto y contenido
+  const primaryQuery = await resolveSearchQuery(params.product, params.content);
+  let pick = await searchPexels(primaryQuery, apiKey, excludeSet);
+
+  // Intento 2: query simplificada con solo el nombre del producto
+  if (!pick && params.product && params.product.length < 60) {
+    const simpleQuery = `${params.product} professional`;
+    console.log(`[pexels] fallback 1: "${simpleQuery}"`);
+    pick = await searchPexels(simpleQuery, apiKey, excludeSet);
+  }
+
+  // Intento 3: query genérica de finanzas/inversión
+  if (!pick) {
+    const genericQuery = "business executive finance investment professional";
+    console.log(`[pexels] fallback 2: "${genericQuery}"`);
+    pick = await searchPexels(genericQuery, apiKey, excludeSet);
+  }
+
+  if (!pick) throw new Error(`No se encontraron imágenes para: "${primaryQuery}"`);
+
   const imageRes = await fetch(pick.src.large2x || pick.src.large);
   if (!imageRes.ok) throw new Error(`Error al descargar imagen de Pexels (${imageRes.status})`);
   const buffer = await imageRes.arrayBuffer();
@@ -135,24 +155,77 @@ export async function generateImageFromPexels(params: ImageParams): Promise<Imag
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// IA GENERATIVA — Pollinations (flux)
-// Gratuito, sin API key. Google Imagen 3 requiere Vertex AI + billing.
-// Cuando tengas acceso a Vertex AI, reemplaza este bloque.
+// fal.ai — Flux Pro 1.1 Ultra (máxima calidad fotorrealista)
+// Documentación: https://fal.ai/models/fal-ai/flux-pro/v1.1-ultra
 // ─────────────────────────────────────────────────────────────────────────────
+
+type FalQueueResponse = { request_id: string };
+type FalResultResponse = {
+  images?: { url: string; content_type: string }[];
+  status?: string;
+};
+
+async function pollFalResult(requestId: string, falKey: string): Promise<FalResultResponse> {
+  const statusUrl = `https://queue.fal.run/fal-ai/flux-pro/v1.1-ultra/requests/${requestId}`;
+  const headers = { Authorization: `Key ${falKey}` };
+
+  // Polling con backoff: máx 90s (~30 intentos × 3s)
+  for (let i = 0; i < 30; i++) {
+    await new Promise((r) => setTimeout(r, 3000));
+    const res = await fetch(statusUrl, { headers });
+    if (!res.ok) throw new Error(`fal.ai status error: ${res.status}`);
+    const data = await res.json() as FalResultResponse;
+    if (data.status === "COMPLETED" || data.images?.length) return data;
+    if (data.status === "FAILED") throw new Error("fal.ai: la generación falló");
+  }
+  throw new Error("fal.ai: timeout esperando la imagen");
+}
+
 export async function generateImageWithAI(params: ImageParams): Promise<ImageResult> {
+  const falKey = process.env.FAL_KEY;
+  if (!falKey) throw new Error("FAL_KEY no está configurada en .env.local");
+
   const prompt = buildAIPrompt(params.product, params.content);
-  const seed = Math.floor(Math.random() * 1_000_000);
+  console.log(`[fal.ai] Flux Pro 1.1 Ultra — prompt: "${prompt.slice(0, 120)}..."`);
 
-  const url =
-    `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}` +
-    `?width=1080&height=1080&seed=${seed}&nologo=true&model=flux`;
+  // Encolar la generación
+  const queueRes = await fetch("https://queue.fal.run/fal-ai/flux-pro/v1.1-ultra", {
+    method: "POST",
+    headers: {
+      Authorization: `Key ${falKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      prompt,
+      image_size:         "square_hd",       // 1024×1024
+      num_inference_steps: 28,
+      guidance_scale:      3.5,
+      num_images:          1,
+      safety_tolerance:    "5",
+      output_format:       "jpeg",
+    }),
+  });
 
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Error al generar imagen con IA (${res.status})`);
+  if (!queueRes.ok) {
+    const err = await queueRes.text();
+    throw new Error(`fal.ai queue error (${queueRes.status}): ${err.slice(0, 200)}`);
+  }
 
-  const buffer = await res.arrayBuffer();
+  const queue = await queueRes.json() as FalQueueResponse;
+  console.log(`[fal.ai] request_id: ${queue.request_id}`);
+
+  // Esperar resultado
+  const result = await pollFalResult(queue.request_id, falKey);
+
+  const imageUrl = result.images?.[0]?.url;
+  if (!imageUrl) throw new Error("fal.ai no devolvió imagen");
+
+  // Descargar la imagen y convertir a base64 para pasarla al cliente
+  const imgRes = await fetch(imageUrl);
+  if (!imgRes.ok) throw new Error(`Error descargando imagen de fal.ai (${imgRes.status})`);
+  const buffer = await imgRes.arrayBuffer();
   const base64 = Buffer.from(buffer).toString("base64");
-  const mimeType = res.headers.get("content-type") ?? "image/jpeg";
+  const mimeType = imgRes.headers.get("content-type") ?? "image/jpeg";
 
   return { imageUrl: `data:${mimeType};base64,${base64}` };
 }

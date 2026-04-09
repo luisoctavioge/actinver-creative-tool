@@ -235,8 +235,6 @@ export default function Home() {
     setContent(variant);
     setVariants([]);
     setVariantsStatus("idle");
-    setGeneratedImageUrl(null);
-    setImageStatus("idle");
     setCaptions([]);
     setCaptionsStatus("idle");
     setBottomPanelOpen(false);

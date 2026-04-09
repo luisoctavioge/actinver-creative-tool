@@ -128,9 +128,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Falta el campo 'id' del record" }, { status: 400 });
   }
 
-  if (!extractProductName(rawFields.Producto ?? "")) {
+  const productName = extractProductName(rawFields.Producto ?? "");
+  if (!productName || productName === "[object Object]") {
     return NextResponse.json(
-      { error: "El campo 'Producto' es obligatorio" },
+      {
+        error: "El campo 'Producto' es obligatorio. Si es un linked record, asegúrate de enviarlo como array JSON (getCellValue), no como String(getCellValue).",
+        received: String(rawFields.Producto ?? "(vacío)").slice(0, 200),
+      },
       { status: 400 },
     );
   }
