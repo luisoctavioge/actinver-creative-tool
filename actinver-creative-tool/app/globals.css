@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-azul-grandeza:       #0A0E12;
+  --color-azul-acompanamiento: #1A2433;
+  --color-azul-actinver:       #314566;
+  --color-arena:               #F5F2EB;
+  --color-sunset:              #E6C78A;
+}
+
+body {
+  background-color: var(--color-azul-grandeza);
+  color: #FFFFFF;
+  font-family: var(--font-open-sans), sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  /* Scrollbar personalizado acorde a paleta oscura */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: var(--color-azul-acompanamiento);
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--color-azul-actinver);
+    border-radius: 2px;
+  }
+}
