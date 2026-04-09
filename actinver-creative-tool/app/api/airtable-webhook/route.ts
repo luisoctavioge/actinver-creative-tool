@@ -51,7 +51,7 @@ function isAuthorized(req: NextRequest): boolean {
   if (!secret) return true; // sin secreto configurado: aceptar todo (solo para dev local)
 
   const header = req.headers.get("x-webhook-secret");
-  return header === secret;
+  return header === secret.trim();
 }
 
 // ─── Extractor de nombre de producto ─────────────────────────────────────────
