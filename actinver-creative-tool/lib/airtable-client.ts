@@ -41,6 +41,7 @@ export interface FormFields {
   EdadRango?: "25-35" | "36-50" | "51-65";
   TipoPieza?: "Educativa" | "Promo" | "Institucional";
   Formatos?:  string[];         // ["story", "square", "horizontal"]
+  Email?:     string;           // Email del solicitante para acuse de recibo
 }
 
 // Campos que escribe el webhook de vuelta al record.

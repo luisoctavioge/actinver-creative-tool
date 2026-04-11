@@ -18,10 +18,11 @@
 //     "fields": {
 //       "Producto":   "Fondo en dólares",
 //       "Mensaje":    "Protege tu patrimonio",
-//       "Genero":     "Ambos",           // opcional
-//       "EdadRango":  "36-50",           // opcional
-//       "TipoPieza":  "Educativa",       // opcional
-//       "Formatos":   ["square","story"] // opcional — default: ["square"]
+//       "Genero":     "Ambos",              // opcional
+//       "EdadRango":  "36-50",              // opcional
+//       "TipoPieza":  "Educativa",          // opcional
+//       "Formatos":   ["square","story"],   // opcional — default: ["square"]
+//       "Email":      "solicitante@ejemplo.com" // opcional — para acuse de recibo
 //     }
 //   }
 
@@ -202,12 +203,15 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Paso 4: Escribir resultados de vuelta en el record ─────────────────
+    const email = rawFields.Email?.trim() ?? "";
     await updateRecord(baseId, tableId, recordId, {
       EstadoProceso:              "Listo ✓",
       TituloGenerado:      content.title,
       DescripcionGenerada: content.description,
       CTAGenerado:         content.cta,
       FechaGeneracion:     new Date().toISOString(),
+      // Email del solicitante — disponible para la Automation de acuse de recibo
+      ...(email ? { EmailSolicitante: email } : {}),
     });
 
     console.log(`[airtable-webhook] ✓ Pieza generada para record ${recordId}`);
