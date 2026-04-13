@@ -1,4 +1,4 @@
-// Exporta los 4 formatos como PNG en un ZIP descargable.
+// Exporta formatos como PNG en un ZIP descargable.
 //
 // Fixes clave vs html2canvas:
 //   1. Logo inline SVG: ActinverLogo usa fills explícitos — html2canvas lo renderiza nativamente.
@@ -6,13 +6,29 @@
 //   3. backdrop-filter: no soportado, se simula con gradiente sólido.
 
 import JSZip from "jszip";
+import { FormatKey, FORMATS, NATIVE } from "./templates";
 
-const EXPORT = {
-  story:      { scale: 1080 / 380, label: "story-9x16"      },
-  square:     { scale: 1080 / 540, label: "square-1x1"       },
-  horizontal: { scale: 1920 / 960, label: "horizontal-16x9"  },
-  poster:     { scale: 1080 / 540, label: "poster-3x4"       },
-} as const;
+// Escala de exportación: resolución final / tamaño nativo CSS
+function getExportScale(format: FormatKey): number {
+  const { width } = FORMATS[format];
+  const { w } = NATIVE[format];
+  return width / w;
+}
+
+function getExportLabel(format: FormatKey): string {
+  const labels: Record<FormatKey, string> = {
+    story:              "story-9x16",
+    square:             "square-1x1",
+    horizontal:         "horizontal-16x9",
+    poster:             "poster-3x4",
+    "fullhd-v":         "pantalla-v-9x16",
+    "fullhd-h":         "pantalla-h-16x9",
+    "email-internal":   "email-interno",
+    "email-client":     "email-cliente",
+    "event-invitation": "invitacion-4x5",
+  };
+  return labels[format] ?? format;
+}
 
 function waitForPaint(): Promise<void> {
   return new Promise((resolve) =>
@@ -71,6 +87,11 @@ async function captureElement(el: HTMLElement, scale: number): Promise<Blob> {
       logging:         false,
       onclone: (clonedDoc) => {
         patchBackdropFilter(clonedDoc);
+        // Ensure logo SVGs are visible and have no problematic filters
+        clonedDoc.querySelectorAll<HTMLElement>("[data-export-logo]").forEach((el) => {
+          el.style.display = "block";
+          el.style.filter = "none";
+        });
       },
     });
 
@@ -85,20 +106,26 @@ async function captureElement(el: HTMLElement, scale: number): Promise<Blob> {
   }
 }
 
-export async function downloadAllFormats(refs: {
-  story:      HTMLElement | null;
-  square:     HTMLElement | null;
-  horizontal: HTMLElement | null;
-  poster:     HTMLElement | null;
-}): Promise<void> {
+/**
+ * Downloads all active formats as a ZIP.
+ * `refs` is a partial map of FormatKey → DOM element.
+ * `activeFormats` specifies which formats to include (defaults to all keys in refs).
+ */
+export async function downloadAllFormats(
+  refs: Partial<Record<FormatKey, HTMLElement | null>>,
+  activeFormats?: FormatKey[],
+): Promise<void> {
+  const formats = activeFormats ?? (Object.keys(refs) as FormatKey[]);
   const zip = new JSZip();
 
-  for (const [fmt, cfg] of Object.entries(EXPORT) as [keyof typeof EXPORT, (typeof EXPORT)[keyof typeof EXPORT]][]) {
+  for (const fmt of formats) {
     const el = refs[fmt];
-    if (!el) throw new Error(`Falta el elemento para el formato "${fmt}"`);
+    if (!el) continue;
 
-    const blob = await captureElement(el, cfg.scale);
-    zip.file(`actinver-${cfg.label}.png`, blob);
+    const scale = getExportScale(fmt);
+    const label = getExportLabel(fmt);
+    const blob = await captureElement(el, scale);
+    zip.file(`actinver-${label}.png`, blob);
   }
 
   const zipBlob = await zip.generateAsync({ type: "blob" });

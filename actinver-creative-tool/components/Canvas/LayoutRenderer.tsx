@@ -19,9 +19,13 @@ interface LayoutRendererProps {
   showBadge?: boolean;
   logoAlign?: LogoAlign;
   forExport?: boolean;
+  // Datos de evento (solo renderizados en event-invitation)
+  eventDate?: string;
+  eventLocation?: string;
+  eventTime?: string;
 }
 
-export default function LayoutRenderer({ format, tokens, content, imageUrl, isLoading, showBadge = true, logoAlign = "left", forExport = false }: LayoutRendererProps) {
+export default function LayoutRenderer({ format, tokens, content, imageUrl, isLoading, showBadge = true, logoAlign = "left", forExport = false, eventDate, eventLocation, eventTime }: LayoutRendererProps) {
   const { w, h } = NATIVE[format];
   const hasContent = content.title.trim().length > 0;
   const t = tokens;
@@ -60,13 +64,16 @@ export default function LayoutRenderer({ format, tokens, content, imageUrl, isLo
         flexDirection: headerReversed ? "row-reverse" : "row",
       }}>
         {/* Logo — inline SVG para que html2canvas renderice los fills correctamente */}
-        <ActinverLogo
-          width={t.logo.width}
-          height={t.logo.height}
-          style={{
-            filter: "drop-shadow(0 1px 4px rgba(0,0,0,0.80)) drop-shadow(0 2px 12px rgba(0,0,0,0.50))",
-          }}
-        />
+        {/* drop-shadow desactivado en export: html2canvas tiene problemas con SVG filters */}
+        <div data-export-logo>
+          <ActinverLogo
+            width={t.logo.width}
+            height={t.logo.height}
+            style={forExport ? undefined : {
+              filter: "drop-shadow(0 1px 4px rgba(0,0,0,0.80)) drop-shadow(0 2px 12px rgba(0,0,0,0.50))",
+            }}
+          />
+        </div>
 
         {/* Badge */}
         {showBadge && <div
@@ -114,6 +121,41 @@ export default function LayoutRenderer({ format, tokens, content, imageUrl, isLo
         }}>
           {hasContent ? content.title : <span style={{ color: "rgba(255,255,255,0.15)" }}>Tu título aparecerá aquí</span>}
         </h1>
+
+        {/* Event info — solo en event-invitation */}
+        {format === "event-invitation" && (eventDate || eventTime || eventLocation) && (
+          <div style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 6,
+          }}>
+            {(eventDate || eventTime) && (
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                {/* Calendar icon */}
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, opacity: 0.7 }}>
+                  <rect x="1" y="2" width="14" height="13" rx="2" stroke="#E5C78A" strokeWidth="1.4" />
+                  <path d="M5 1v2M11 1v2" stroke="#E5C78A" strokeWidth="1.4" strokeLinecap="round" />
+                  <path d="M1 6h14" stroke="#E5C78A" strokeWidth="1.2" />
+                </svg>
+                <span style={{ fontFamily: "var(--font-open-sans)", fontSize: 13, color: "#E5C78A", fontWeight: 600, letterSpacing: "0.02em" }}>
+                  {[eventDate ? new Date(eventDate + "T00:00:00").toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) : null, eventTime].filter(Boolean).join("  ·  ")}
+                </span>
+              </div>
+            )}
+            {eventLocation && (
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                {/* Pin icon */}
+                <svg width="11" height="13" viewBox="0 0 12 16" fill="none" style={{ flexShrink: 0, opacity: 0.7 }}>
+                  <path d="M6 1C3.79 1 2 2.79 2 5c0 3 4 9 4 9s4-6 4-9c0-2.21-1.79-4-4-4z" stroke="#E5C78A" strokeWidth="1.4" />
+                  <circle cx="6" cy="5" r="1.5" stroke="#E5C78A" strokeWidth="1.2" />
+                </svg>
+                <span style={{ fontFamily: "var(--font-open-sans)", fontSize: 13, color: "rgba(255,255,255,0.75)", fontWeight: 400, letterSpacing: "0.01em" }}>
+                  {eventLocation}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Glass card */}
         <div

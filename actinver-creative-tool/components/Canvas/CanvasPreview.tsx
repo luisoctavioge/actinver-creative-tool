@@ -1,9 +1,10 @@
 "use client";
 
 import { useRef, useState, useEffect, useCallback } from "react";
-import { FormatKey, FORMATS, NATIVE, PieceContent, LogoAlign } from "@/lib/templates";
+import { FormatKey, FORMATS, NATIVE, PieceContent, LogoAlign, LayoutId } from "@/lib/templates";
 import { DEFAULT_LAYOUT } from "@/lib/layouts";
 import LayoutRenderer from "./LayoutRenderer";
+import EditorialRenderer from "./EditorialRenderer";
 
 interface CanvasPreviewProps {
   format: FormatKey;
@@ -14,6 +15,11 @@ interface CanvasPreviewProps {
   onSelectHistoryImage?: (url: string) => void;
   showBadge?: boolean;
   logoAlign?: LogoAlign;
+  layoutId?: LayoutId;
+  categoryLabel?: string;
+  eventDate?: string;
+  eventLocation?: string;
+  eventTime?: string;
 }
 
 // ── Hook: calcula el scale para que el canvas nativo quepa en su contenedor ───
@@ -39,7 +45,7 @@ function useCanvasScale(nativeW: number, nativeH: number) {
 }
 
 // ── Componente principal ───────────────────────────────────────────────────────
-export default function CanvasPreview({ format, content, imageUrl, isLoading, imageHistory, onSelectHistoryImage, showBadge = true, logoAlign = "left" }: CanvasPreviewProps) {
+export default function CanvasPreview({ format, content, imageUrl, isLoading, imageHistory, onSelectHistoryImage, showBadge = true, logoAlign = "left", layoutId = "fundador-classic", categoryLabel, eventDate, eventLocation, eventTime }: CanvasPreviewProps) {
   const fmt = FORMATS[format];
   const { w: nativeW, h: nativeH } = NATIVE[format];
   const { containerRef, scale } = useCanvasScale(nativeW, nativeH);
@@ -54,11 +60,9 @@ export default function CanvasPreview({ format, content, imageUrl, isLoading, im
           {imageUrl && <><span className="text-white/20">·</span><span className="text-green-400/60">Imagen lista</span></>}
         </div>
 
-        {/* Contenedor de escala — mide el espacio disponible */}
+        {/* Contenedor de escala */}
         <div ref={containerRef} className="flex-1 w-full flex items-center justify-center min-h-0">
-          {/* Wrapper al tamaño escalado (evita overflow) */}
           <div style={{ width: nativeW * scale, height: nativeH * scale, flexShrink: 0 }}>
-            {/* Canvas nativo — se escala con transform */}
             <div
               style={{
                 width: nativeW,
@@ -67,10 +71,7 @@ export default function CanvasPreview({ format, content, imageUrl, isLoading, im
                 transform: `scale(${scale})`,
               }}
             >
-              {format === "story"      && <StoryCanvas      content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} logoAlign={logoAlign} />}
-              {format === "square"     && <SquareCanvas     content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} logoAlign={logoAlign} />}
-              {format === "horizontal" && <HorizontalCanvas content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} logoAlign={logoAlign} />}
-              {format === "poster"     && <PosterCanvas     content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} logoAlign={logoAlign} />}
+              <FormatCanvas format={format} content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} logoAlign={logoAlign} layoutId={layoutId} categoryLabel={categoryLabel} eventDate={eventDate} eventLocation={eventLocation} eventTime={eventTime} />
             </div>
           </div>
         </div>
@@ -108,24 +109,53 @@ export interface CanvasProps {
   isLoading: boolean;
   showBadge?: boolean;
   logoAlign?: LogoAlign;
+  layoutId?: LayoutId;
+  categoryLabel?: string;
   forExport?: boolean;
+  // Datos de evento (solo para event-invitation)
+  eventDate?: string;
+  eventLocation?: string;
+  eventTime?: string;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Wrappers que delegan al LayoutRenderer genérico con DEFAULT_LAYOUT.
-// ─────────────────────────────────────────────────────────────────────────────
-export function StoryCanvas({ content, imageUrl, isLoading, showBadge, logoAlign, forExport }: CanvasProps) {
-  return <LayoutRenderer format="story" tokens={DEFAULT_LAYOUT.tokens.story} content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} logoAlign={logoAlign} forExport={forExport} />;
+// ── Generic format canvas — works for any FormatKey ──────────────────────────
+export function FormatCanvas({ format, content, imageUrl, isLoading, showBadge, logoAlign, layoutId = "fundador-classic", categoryLabel, forExport, eventDate, eventLocation, eventTime }: CanvasProps & { format: FormatKey }) {
+  // Elegir renderer según el layout seleccionado
+  if (layoutId === "editorial") {
+    return (
+      <EditorialRenderer
+        format={format}
+        content={content}
+        imageUrl={imageUrl}
+        isLoading={isLoading}
+        categoryLabel={categoryLabel}
+        logoAlign={logoAlign}
+        forExport={forExport}
+      />
+    );
+  }
+
+  // Default: Fundador Classic (glass card layout)
+  const tokens = DEFAULT_LAYOUT.tokens[format];
+  return (
+    <LayoutRenderer
+      format={format}
+      tokens={tokens}
+      content={content}
+      imageUrl={imageUrl}
+      isLoading={isLoading}
+      showBadge={showBadge}
+      logoAlign={logoAlign}
+      forExport={forExport}
+      eventDate={eventDate}
+      eventLocation={eventLocation}
+      eventTime={eventTime}
+    />
+  );
 }
 
-export function SquareCanvas({ content, imageUrl, isLoading, showBadge, logoAlign, forExport }: CanvasProps) {
-  return <LayoutRenderer format="square" tokens={DEFAULT_LAYOUT.tokens.square} content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} logoAlign={logoAlign} forExport={forExport} />;
-}
-
-export function HorizontalCanvas({ content, imageUrl, isLoading, showBadge, logoAlign, forExport }: CanvasProps) {
-  return <LayoutRenderer format="horizontal" tokens={DEFAULT_LAYOUT.tokens.horizontal} content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} logoAlign={logoAlign} forExport={forExport} />;
-}
-
-export function PosterCanvas({ content, imageUrl, isLoading, showBadge, logoAlign, forExport }: CanvasProps) {
-  return <LayoutRenderer format="poster" tokens={DEFAULT_LAYOUT.tokens.poster} content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} logoAlign={logoAlign} forExport={forExport} />;
-}
+// ── Legacy named exports for backward compatibility ─────────────────────────
+export function StoryCanvas(props: CanvasProps) { return <FormatCanvas format="story" {...props} />; }
+export function SquareCanvas(props: CanvasProps) { return <FormatCanvas format="square" {...props} />; }
+export function HorizontalCanvas(props: CanvasProps) { return <FormatCanvas format="horizontal" {...props} />; }
+export function PosterCanvas(props: CanvasProps) { return <FormatCanvas format="poster" {...props} />; }

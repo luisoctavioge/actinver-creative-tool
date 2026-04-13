@@ -1,49 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateImageFromPexels, generateImageWithAI } from "@/lib/image-generator";
 import { PieceContent } from "@/lib/templates";
-import { loadAllFichas, ProductFicha } from "@/lib/fichas";
-
-// Busca la ficha que mejor coincida con el nombre de producto del brief
-function findFicha(product: string): ProductFicha | null {
-  if (!product) return null;
-  const fichas = loadAllFichas();
-  const p = product.toLowerCase();
-
-  // Match exacto por nombre
-  const exact = fichas.find((f) => f.nombre.toLowerCase() === p);
-  if (exact) return exact;
-
-  // Match parcial — busca keywords del nombre de la ficha dentro del product
-  const partial = fichas.find((f) => {
-    const words = f.nombre.toLowerCase().split(/\s+/);
-    // Al menos 2 palabras significativas deben coincidir
-    const matches = words.filter((w) => w.length > 3 && p.includes(w));
-    return matches.length >= 2;
-  });
-  if (partial) return partial;
-
-  // Match por id
-  const byId = fichas.find((f) => p.includes(f.id.replace(/-/g, " ")));
-  if (byId) return byId;
-
-  // Match por categoría keywords
-  const byCat = fichas.find((f) => {
-    const catWords = f.categoria.toLowerCase().split(/\s+/);
-    return catWords.some((w) => w.length > 3 && p.includes(w));
-  });
-
-  return byCat ?? null;
-}
+import { findFicha } from "@/lib/fichas";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { product, content, provider, message, excludeIds } = body as {
+    const { product, content, provider, message, excludeIds, genero, edadRango, tipoPieza, communicationType, imageMode } = body as {
       product: string;
       content: PieceContent;
       provider: "pexels" | "ai";
       message?: string;
       excludeIds?: string[];
+      genero?: string;
+      edadRango?: string;
+      tipoPieza?: string;
+      communicationType?: string;
+      imageMode?: string;
     };
 
     if (!content?.title?.trim()) {
@@ -62,6 +35,11 @@ export async function POST(req: NextRequest) {
       message,
       ficha,
       excludeIds,
+      genero,
+      edadRango,
+      tipoPieza,
+      communicationType,
+      imageMode,
     };
 
     const result = provider === "ai"

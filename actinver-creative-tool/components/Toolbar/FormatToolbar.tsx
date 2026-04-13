@@ -1,7 +1,7 @@
 "use client";
 
 import { FORMATS, FORMAT_KEYS, FormatKey, NATIVE, PieceContent } from "@/lib/templates";
-import { StoryCanvas, SquareCanvas, HorizontalCanvas, PosterCanvas } from "@/components/Canvas/CanvasPreview";
+import { FormatCanvas } from "@/components/Canvas/CanvasPreview";
 
 // Altura fija de los thumbnails en el header
 const THUMB_H = 40;
@@ -12,12 +12,16 @@ interface FormatToolbarProps {
   content: PieceContent;
   imageUrl: string | null;
   isLoading: boolean;
+  /** When provided, only show these formats. Otherwise show the default 4. */
+  activeFormats?: FormatKey[];
 }
 
-export default function FormatToolbar({ selected, onChange, content, imageUrl, isLoading }: FormatToolbarProps) {
+export default function FormatToolbar({ selected, onChange, content, imageUrl, isLoading, activeFormats }: FormatToolbarProps) {
+  const formats = activeFormats ?? FORMAT_KEYS;
+
   return (
     <div className="flex items-center gap-3">
-      {FORMAT_KEYS.map((fk) => {
+      {formats.map((fk) => {
         const { w, h } = NATIVE[fk];
         const scale = THUMB_H / h;
         const thumbW = Math.round(w * scale);
@@ -51,18 +55,13 @@ export default function FormatToolbar({ selected, onChange, content, imageUrl, i
                 transformOrigin: "top left",
                 transform: `scale(${scale})`,
               }}>
-                {fk === "story"      && <StoryCanvas      content={content} imageUrl={imageUrl} isLoading={isLoading} />}
-                {fk === "square"     && <SquareCanvas     content={content} imageUrl={imageUrl} isLoading={isLoading} />}
-                {fk === "horizontal" && <HorizontalCanvas content={content} imageUrl={imageUrl} isLoading={isLoading} />}
-                {fk === "poster"     && <PosterCanvas     content={content} imageUrl={imageUrl} isLoading={isLoading} />}
+                <FormatCanvas format={fk} content={content} imageUrl={imageUrl} isLoading={isLoading} />
               </div>
-              {/* Overlay oscuro para no-seleccionados */}
               {!isSelected && (
                 <div style={{ position: "absolute", inset: 0, background: "rgba(10,14,18,0.45)", zIndex: 1, borderRadius: "inherit" }} />
               )}
             </div>
 
-            {/* Label */}
             <span
               className={`font-open-sans uppercase tracking-widest transition-colors ${isSelected ? "text-sunset" : "text-white/25 group-hover:text-white/50"}`}
               style={{ fontSize: 9 }}

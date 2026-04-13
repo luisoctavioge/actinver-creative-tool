@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateVariants } from "@/lib/content-generator";
 import { CreatorInput } from "@/lib/templates";
+import { findFicha } from "@/lib/fichas";
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,11 +11,12 @@ export async function POST(req: NextRequest) {
     }
 
     const input = await req.json() as CreatorInput;
-    if (!input.product?.trim()) {
-      return NextResponse.json({ error: "Se requiere producto o tema." }, { status: 400 });
+    if (!input.product?.trim() && !input.message?.trim()) {
+      return NextResponse.json({ error: "Se requiere producto o mensaje." }, { status: 400 });
     }
 
-    const variants = await generateVariants(input, apiKey);
+    const ficha = findFicha(input.product ?? "");
+    const variants = await generateVariants(input, apiKey, ficha ?? undefined);
     return NextResponse.json({ variants });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Error desconocido.";

@@ -16,6 +16,12 @@ export interface ImageParams {
   message?: string;
   ficha?: ProductFicha | null;
   excludeIds?: string[];
+  // v2 context — enrich AI prompts with brief parameters
+  genero?: string;
+  edadRango?: string;
+  tipoPieza?: string;
+  communicationType?: string;
+  imageMode?: string;
 }
 
 export interface ImageResult {
@@ -25,85 +31,110 @@ export interface ImageResult {
   creditUrl?: string;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ANGLE MODIFIERS — fuerzan variación visual en cada búsqueda
-// ─────────────────────────────────────────────────────────────────────────────
-const ANGLE_MODIFIERS = [
-  "close-up detail shot focusing on textures and materials",
-  "wide establishing shot showing the full environment",
-  "overhead bird's-eye view looking straight down",
-  "low-angle dramatic perspective looking upward",
-  "silhouette composition with backlighting",
-  "environmental portrait with context and surroundings",
-  "shallow depth of field with soft bokeh background",
-  "moody side-lit scene with strong shadows",
-  "golden hour warm natural lighting",
-  "minimalist composition with negative space",
-  "candid moment captured in motion",
-  "architectural lines and geometric framing",
-];
-
 function pickRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// TAGS DINÁMICOS — Groq convierte el brief en keywords en inglés para Pexels
+// VARIACIONES VISUALES — garantizan imágenes distintas en cada llamada
+// ─────────────────────────────────────────────────────────────────────────────
+const VISUAL_VARIATIONS = [
+  "candid lifestyle moment",
+  "portrait with natural light",
+  "outdoor environmental scene",
+  "indoor warm light",
+  "action moment with people",
+  "serene contemplative scene",
+  "group interaction",
+  "solo person thinking",
+  "urban setting",
+  "nature setting",
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TAGS DINÁMICOS — Groq convierte el brief en keywords concretas para Pexels
+// La clave: el modelo DEBE leer el mensaje y producto literal, no inventar
+// estética genérica de "ejecutivo en oficina".
 // ─────────────────────────────────────────────────────────────────────────────
 async function resolveSearchQuery(
   product: string,
   content: PieceContent,
   message?: string,
   ficha?: ProductFicha | null,
+  briefContext?: { genero?: string; edadRango?: string; tipoPieza?: string; communicationType?: string },
 ): Promise<string> {
   const apiKey = process.env.GROQ_API_KEY;
-  if (!apiKey) return `${product} professional lifestyle photography`;
+  if (!apiKey) return `${product} lifestyle people`;
 
-  const angle = pickRandom(ANGLE_MODIFIERS);
+  const variation = pickRandom(VISUAL_VARIATIONS);
 
-  // Enriquecer el contexto con ficha y mensaje
-  const contextParts: string[] = [`Product: ${product}`];
-  if (message && message.trim()) contextParts.push(`Key message: ${message.trim()}`);
-  if (content.title) contextParts.push(`Headline: ${content.title}`);
-  if (ficha) {
-    contextParts.push(`Category: ${ficha.categoria}`);
-    contextParts.push(`Description: ${ficha.descripcion}`);
-    contextParts.push(`Target audience: ${ficha.publicoObjetivo}`);
-  }
-  const briefContext = contextParts.join(". ");
+  // Construir el brief completo y explícito para que el LLM no se invente la escena
+  const briefLines: string[] = [];
+  briefLines.push(`PRODUCT: ${product}`);
+  if (message?.trim()) briefLines.push(`MESSAGE TO COMMUNICATE: ${message.trim()}`);
+  if (content.title?.trim()) briefLines.push(`HEADLINE: ${content.title.trim()}`);
+  if (ficha?.publicoObjetivo) briefLines.push(`TARGET AUDIENCE: ${ficha.publicoObjetivo}`);
+  if (ficha?.descripcion) briefLines.push(`PRODUCT DESCRIPTION: ${ficha.descripcion}`);
+
+  // Demografía concreta — crítica para que el LLM ajuste la escena real
+  const ageLabels: Record<string, string> = {
+    "25-35": "young adults aged 25-35",
+    "36-50": "adults aged 36-50",
+    "51-65": "mature adults aged 51-65",
+  };
+  const genderLabels: Record<string, string> = {
+    "hombre": "men",
+    "mujer":  "women",
+    "ambos":  "men and women",
+  };
+  const age    = ageLabels[briefContext?.edadRango ?? ""] ?? "";
+  const gender = genderLabels[briefContext?.genero ?? ""] ?? "";
+  if (age || gender)    briefLines.push(`DEMOGRAPHICS: ${[gender, age].filter(Boolean).join(", ")}`);
+  if (briefContext?.communicationType === "internal") briefLines.push(`CONTEXT: internal workplace communication`);
+
+  const briefBlock = briefLines.join("\n");
 
   try {
     const client = new OpenAI({ apiKey, baseURL: "https://api.groq.com/openai/v1" });
 
     const response = await client.chat.completions.create({
-      model: "llama-3.1-8b-instant",
+      model: "llama-3.3-70b-versatile",
       messages: [
         {
           role: "system",
-          content: `You generate concise English search queries for Pexels stock photography.
-Rules:
-- Return ONLY 3-5 English keywords, nothing else
-- Keywords must describe a SPECIFIC visual scene relevant to the product and message
-- Prefer cinematic, moody, professional, luxury photography
-- No abstract concepts — describe what a camera would capture
-- IMPORTANT: Every call must produce COMPLETELY DIFFERENT keywords. Be creative and surprising.
-- The scene must be OBVIOUSLY related to the product/service being advertised
-- Examples: "luxury car night rain", "executive skyline twilight", "family warm home evening"`,
+          content: `You translate advertising briefs into Pexels photo search queries.
+
+CRITICAL RULES:
+1. Return ONLY 3-4 English keywords — no punctuation, no explanation, nothing else.
+2. Keywords MUST describe the SPECIFIC people and situation in the brief. Read the MESSAGE carefully.
+3. The scene must match the demographic (age, gender) literally. If the audience is "young adults 25-35", show young people. NOT executives or suits.
+4. Keywords describe what a CAMERA would photograph: people, setting, activity, emotion.
+5. Avoid generic financial clichés: NO "executive", "businessman", "office", "skyline", "boardroom", "advisor" unless the MESSAGE specifically demands it.
+6. Match the emotional tone of the message: retirement planning for young people → "young person future thinking"; family protection → "family together park"; investment → "professional confident smiling".
+7. Always vary: each call must produce different keywords.
+
+BAD examples (too generic, wrong audience): "financial advisor calm office", "executive skyline twilight", "businessman warm coffee"
+GOOD examples (message-specific): "young couple planning future", "elderly man relaxing park bench", "woman laptop coffee planning", "friends talking laughing park"`,
         },
         {
           role: "user",
-          content: `${briefContext}. Visual angle: ${angle}. Generate Pexels keywords:`,
+          content: `Brief:\n${briefBlock}\n\nVisual variation hint: ${variation}\n\nGenerate 3-4 Pexels keywords:`,
         },
       ],
-      max_tokens: 30,
-      temperature: 0.85,
+      max_tokens: 20,
+      temperature: 0.75,
     });
 
     const raw = response.choices[0]?.message?.content?.trim() ?? "";
-    const clean = raw.replace(/["""'']/g, "").replace(/\.$/, "").trim();
-    return clean || `${product} professional lifestyle`;
+    // Limpiar cualquier prefijo, puntuación o comillas que el LLM añada
+    const clean = raw
+      .replace(/^(keywords?:|query:|search:|result:)/i, "")
+      .replace(/["""'''*\-]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    return clean || `${product} people lifestyle`;
   } catch {
-    return `${product} professional lifestyle photography`;
+    return `${product} people lifestyle`;
   }
 }
 
@@ -141,15 +172,23 @@ export async function generateImageFromPexels(params: ImageParams): Promise<Imag
 
   const excludeSet = new Set(params.excludeIds ?? []);
 
-  const primaryQuery = await resolveSearchQuery(params.product, params.content, params.message, params.ficha);
+  const primaryQuery = await resolveSearchQuery(params.product, params.content, params.message, params.ficha, params);
   let pick = await searchPexels(primaryQuery, apiKey, excludeSet);
 
+  // Fallback 1: producto + personas (más genérico pero sigue siendo contextual)
   if (!pick && params.product && params.product.length < 60) {
-    pick = await searchPexels(`${params.product} professional`, apiKey, excludeSet);
+    const demographicHint = params.edadRango === "25-35" ? "young" : params.edadRango === "51-65" ? "mature" : "";
+    pick = await searchPexels(`${demographicHint} people ${params.product}`.trim(), apiKey, excludeSet);
   }
 
+  // Fallback 2: solo demografía + escena de vida
   if (!pick) {
-    pick = await searchPexels("business executive finance investment professional", apiKey, excludeSet);
+    const fallbackMap: Record<string, string> = {
+      "25-35": "young adults lifestyle happy",
+      "36-50": "adults professional smiling",
+      "51-65": "mature couple relaxing outdoor",
+    };
+    pick = await searchPexels(fallbackMap[params.edadRango ?? ""] ?? "people lifestyle professional", apiKey, excludeSet);
   }
 
   if (!pick) throw new Error(`No se encontraron imágenes para: "${primaryQuery}"`);
@@ -189,6 +228,14 @@ export async function generateImageWithAI(params: ImageParams): Promise<ImageRes
     params.content,
     params.message,
     params.ficha,
+    undefined, // brand = default
+    {
+      genero: params.genero,
+      edadRango: params.edadRango,
+      tipoPieza: params.tipoPieza,
+      communicationType: params.communicationType,
+      imageMode: params.imageMode,
+    },
   );
   console.log(`[fal.ai] Flux Pro 1.1 Ultra — prompt (${prompt.length} chars): "${prompt.slice(0, 200)}..."`);
 

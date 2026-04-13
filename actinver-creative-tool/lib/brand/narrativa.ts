@@ -105,6 +105,11 @@ Casa de bolsa mexicana con más de 30 años de trayectoria. Gestiona el patrimon
 
 ## Ejemplos de copy completo por producto
 
+> ⚠️ AVISO PARA EL MODELO DE IA: Los ejemplos a continuación son EXCLUSIVAMENTE referencia de ESTRUCTURA y TONO.
+> NUNCA copies su contenido, palabras o frases literales.
+> Genera copy 100% original y específico para el brief del usuario.
+> Si el mensaje del usuario menciona un producto, fondo o servicio por nombre (ej. "ActiAI", "Fondo Tech"), ese nombre es el ÚNICO tema del copy — los ejemplos son irrelevantes para el contenido.
+
 ### Fondos de inversión de corto plazo
 - **Título:** "Rendimientos desde el primer día"
 - **Descripción:** "Ingresa tus recursos y comienza a generar rendimientos competitivos con liquidez inmediata. Sin plazos forzosos, sin complicaciones."

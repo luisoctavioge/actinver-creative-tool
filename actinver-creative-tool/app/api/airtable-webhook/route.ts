@@ -36,6 +36,7 @@ import {
   FormFields,
 } from "@/lib/airtable-client";
 import { FormatKey, CreatorInput } from "@/lib/templates";
+import { CommunicationType, ChannelKey } from "@/lib/types/channels";
 
 // ─── Env helpers ─────────────────────────────────────────────────────────────
 
@@ -98,6 +99,11 @@ function normalizeFields(fields: Partial<FormFields>): CreatorInput {
     conCTA:    true,
     conBadge:  true,
     logoAlign: "left",
+    layoutId: "fundador-classic",
+    imageMode: "auto",
+    categoryLabel: "",
+    communicationTypes: ["external"] as CommunicationType[],
+    selectedChannels:   ["social-media"] as ChannelKey[],
   };
 }
 
@@ -144,7 +150,7 @@ export async function POST(req: NextRequest) {
   // Determinar qué formatos generar.
   // Airtable puede mandar Formatos como string "square, story" (getCellValueAsString)
   // o como array ["square","story"] (getCellValue). Manejamos ambos casos.
-  const VALID_FORMATS = ["story", "square", "horizontal", "poster"] as const;
+  const VALID_FORMATS: FormatKey[] = ["story", "square", "horizontal", "poster"];
   // rawFormatos puede llegar como array o como string CSV según cómo lo manda Airtable
   const rawFormatos = rawFields.Formatos as unknown;
   let formatList: string[] = [];
@@ -182,15 +188,20 @@ export async function POST(req: NextRequest) {
     });
 
     // ── Paso 3: Renderizar piezas como PNG y subir a Airtable ──────────────
-    const formatLabel: Record<FormatKey, string> = {
-      story:      "Story_9x16",
-      square:     "Cuadrado_1x1",
-      horizontal: "Horizontal_16x9",
-      poster:     "Poster_3x4",
+    const formatLabel: Partial<Record<FormatKey, string>> = {
+      story:              "Story_9x16",
+      square:             "Cuadrado_1x1",
+      horizontal:         "Horizontal_16x9",
+      poster:             "Poster_3x4",
+      "fullhd-v":         "PantallaV_9x16",
+      "fullhd-h":         "PantallaH_16x9",
+      "email-internal":   "EmailInterno_600x800",
+      "email-client":     "EmailCliente_600x800",
+      "event-invitation": "Invitacion_4x5",
     };
 
     for (const format of formats) {
-      const label = formatLabel[format];
+      const label = formatLabel[format] ?? format;
 
       // Renderizar ambas versiones en paralelo
       const [png1, png2] = await Promise.all([
