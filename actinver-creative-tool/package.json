@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@fal-ai/client": "^1.9.5",
     "html2canvas": "^1.4.1",
     "jszip": "^3.10.1",
     "next": "14.2.35",

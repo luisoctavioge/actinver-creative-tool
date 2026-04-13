@@ -2,13 +2,11 @@
 // Consulta lib/brand/narrativa.md en cada llamada como fuente de verdad de marca
 
 import OpenAI from "openai";
-import fs from "fs";
-import path from "path";
 import { CreatorInput, PieceContent, ChannelCaption, SocialChannel, CAPTION_LIMITS } from "./templates";
+import { NARRATIVA } from "./brand/narrativa";
 
 function loadNarrativa(): string {
-  const filePath = path.join(process.cwd(), "lib/brand/narrativa.md");
-  return fs.readFileSync(filePath, "utf-8");
+  return NARRATIVA;
 }
 
 export async function generateVariants(
@@ -36,12 +34,14 @@ Brief:
 - Tipo de pieza: ${input.tipoPieza ?? "educativa"}
 - Incluir CTA explícito: ${input.conCTA !== false ? "Sí" : "No — retorna cta como cadena vacía"}
 
+REGLA CTA CRÍTICA: El CTA debe ser una frase completa de mínimo 15 caracteres con verbo + objeto. NUNCA una sola palabra o sílaba como "Sí", "Listo" o "Más info". Si el título es una pregunta, el CTA responde con una acción completa (ej. "Sí, quiero conocer más", "Empieza a invertir hoy").
+
 Devuelve exactamente:
 {
   "variants": [
-    { "title": "máx 48 chars", "description": "máx 180 chars", "cta": "máx 30 chars" },
-    { "title": "máx 48 chars", "description": "máx 180 chars", "cta": "máx 30 chars" },
-    { "title": "máx 48 chars", "description": "máx 180 chars", "cta": "máx 30 chars" }
+    { "title": "máx 48 chars", "description": "máx 180 chars", "cta": "entre 15 y 30 chars, frase completa" },
+    { "title": "máx 48 chars", "description": "máx 180 chars", "cta": "entre 15 y 30 chars, frase completa" },
+    { "title": "máx 48 chars", "description": "máx 180 chars", "cta": "entre 15 y 30 chars, frase completa" }
   ]
 }`,
       },
@@ -72,7 +72,7 @@ export async function regenerateSingleField(
   const fieldSpec = {
     title:       "máx 48 caracteres, impactante y directo",
     description: "máx 180 caracteres, complementa el título sin repetirlo",
-    cta:         "máx 30 caracteres, verbo imperativo, en español",
+    cta:         "entre 15 y 30 caracteres, frase completa con verbo + objeto. NUNCA una sola palabra. Si el título es pregunta, responde con acción completa.",
   }[field];
 
   const response = await client.chat.completions.create({
@@ -144,11 +144,13 @@ Responde ÚNICAMENTE con JSON puro, sin markdown ni bloques de código.`,
 REGLA CRÍTICA: El título y descripción DEBEN hablar DIRECTAMENTE y LITERALMENTE sobre "${input.product}".
 Si el producto es "Seguro de auto", el título debe mencionar el auto o el seguro. NUNCA uses metáforas de negocio si el producto es de consumo personal.
 
+REGLA CTA CRÍTICA: El CTA debe ser una frase completa de mínimo 15 caracteres con verbo + objeto. NUNCA una sola palabra o sílaba como "Sí", "Listo" o "Más info". Si el título es una pregunta, el CTA responde con una acción completa (ej. "Sí, quiero conocer más", "Empieza a invertir hoy").
+
 Devuelve exactamente este JSON (respeta los límites de caracteres):
 {
   "title": "máx 48 caracteres — específico sobre ${input.product}",
   "description": "máx 180 caracteres, no repitas el título",
-  "cta": "máx 30 caracteres, verbo imperativo"
+  "cta": "entre 15 y 30 caracteres, frase completa con verbo + acción"
 }`,
       },
     ],

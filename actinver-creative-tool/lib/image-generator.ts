@@ -4,6 +4,7 @@
 //   generateImageFromPexels → búsqueda de stock (Pexels)
 //   generateImageWithAI     → fal.ai Flux Pro 1.1 Ultra (máxima calidad)
 
+import { fal } from "@fal-ai/client";
 import OpenAI from "openai";
 import { buildAIPrompt } from "./gemini";
 import { PieceContent } from "./templates";
@@ -120,22 +121,15 @@ export async function generateImageFromPexels(params: ImageParams): Promise<Imag
 
   const excludeSet = new Set(params.excludeIds ?? []);
 
-  // Intento 1: query generada por Groq basada en el producto y contenido
   const primaryQuery = await resolveSearchQuery(params.product, params.content);
   let pick = await searchPexels(primaryQuery, apiKey, excludeSet);
 
-  // Intento 2: query simplificada con solo el nombre del producto
   if (!pick && params.product && params.product.length < 60) {
-    const simpleQuery = `${params.product} professional`;
-    console.log(`[pexels] fallback 1: "${simpleQuery}"`);
-    pick = await searchPexels(simpleQuery, apiKey, excludeSet);
+    pick = await searchPexels(`${params.product} professional`, apiKey, excludeSet);
   }
 
-  // Intento 3: query genérica de finanzas/inversión
   if (!pick) {
-    const genericQuery = "business executive finance investment professional";
-    console.log(`[pexels] fallback 2: "${genericQuery}"`);
-    pick = await searchPexels(genericQuery, apiKey, excludeSet);
+    pick = await searchPexels("business executive finance investment professional", apiKey, excludeSet);
   }
 
   if (!pick) throw new Error(`No se encontraron imágenes para: "${primaryQuery}"`);
@@ -156,71 +150,41 @@ export async function generateImageFromPexels(params: ImageParams): Promise<Imag
 
 // ─────────────────────────────────────────────────────────────────────────────
 // fal.ai — Flux Pro 1.1 Ultra (máxima calidad fotorrealista)
-// Documentación: https://fal.ai/models/fal-ai/flux-pro/v1.1-ultra
+// SDK oficial: @fal-ai/client
+// Modelo: fal-ai/flux-pro/v1.1-ultra
 // ─────────────────────────────────────────────────────────────────────────────
 
-type FalQueueResponse = { request_id: string };
-type FalResultResponse = {
-  images?: { url: string; content_type: string }[];
-  status?: string;
-};
-
-async function pollFalResult(requestId: string, falKey: string): Promise<FalResultResponse> {
-  const statusUrl = `https://queue.fal.run/fal-ai/flux-pro/v1.1-ultra/requests/${requestId}`;
-  const headers = { Authorization: `Key ${falKey}` };
-
-  // Polling con backoff: máx 90s (~30 intentos × 3s)
-  for (let i = 0; i < 30; i++) {
-    await new Promise((r) => setTimeout(r, 3000));
-    const res = await fetch(statusUrl, { headers });
-    if (!res.ok) throw new Error(`fal.ai status error: ${res.status}`);
-    const data = await res.json() as FalResultResponse;
-    if (data.status === "COMPLETED" || data.images?.length) return data;
-    if (data.status === "FAILED") throw new Error("fal.ai: la generación falló");
-  }
-  throw new Error("fal.ai: timeout esperando la imagen");
-}
+type FalImage = { url: string; content_type?: string };
+type FalOutput = { images?: FalImage[] };
 
 export async function generateImageWithAI(params: ImageParams): Promise<ImageResult> {
   const falKey = process.env.FAL_KEY;
   if (!falKey) throw new Error("FAL_KEY no está configurada en .env.local");
 
+  // Configurar credenciales por request (seguro en serverless)
+  fal.config({ credentials: falKey });
+
   const prompt = buildAIPrompt(params.product, params.content);
   console.log(`[fal.ai] Flux Pro 1.1 Ultra — prompt: "${prompt.slice(0, 120)}..."`);
 
-  // Encolar la generación
-  const queueRes = await fetch("https://queue.fal.run/fal-ai/flux-pro/v1.1-ultra", {
-    method: "POST",
-    headers: {
-      Authorization: `Key ${falKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
+  const result = await fal.subscribe("fal-ai/flux-pro/v1.1-ultra", {
+    input: {
       prompt,
-      image_size:         "square_hd",       // 1024×1024
-      num_inference_steps: 28,
-      guidance_scale:      3.5,
-      num_images:          1,
-      safety_tolerance:    "5",
-      output_format:       "jpeg",
-    }),
-  });
+      aspect_ratio:     "1:1",   // cuadrado 1:1 para social media
+      num_images:       1,
+      safety_tolerance: "5",
+      output_format:    "jpeg",
+      enhance_prompt:   false,   // el prompt ya viene optimizado por buildAIPrompt
+    },
+    logs: false,
+  }) as { data: FalOutput };
 
-  if (!queueRes.ok) {
-    const err = await queueRes.text();
-    throw new Error(`fal.ai queue error (${queueRes.status}): ${err.slice(0, 200)}`);
-  }
-
-  const queue = await queueRes.json() as FalQueueResponse;
-  console.log(`[fal.ai] request_id: ${queue.request_id}`);
-
-  // Esperar resultado
-  const result = await pollFalResult(queue.request_id, falKey);
-
-  const imageUrl = result.images?.[0]?.url;
+  const imageUrl = result.data?.images?.[0]?.url;
   if (!imageUrl) throw new Error("fal.ai no devolvió imagen");
 
-  // Descargar la imagen y convertir a base64 para pasarla al cliente
+  console.log(`[fal.ai] ✓ Imagen generada: ${imageUrl.slice(0, 80)}...`);
+
+  // Descargar y convertir a base64 para el cliente
   const imgRes = await fetch(imageUrl);
   if (!imgRes.ok) throw new Error(`Error descargando imagen de fal.ai (${imgRes.status})`);
   const buffer = await imgRes.arrayBuffer();
