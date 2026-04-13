@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import ActinverLogo from "./Canvas/ActinverLogo";
 
 interface SplashScreenProps {
   onDone: () => void;
@@ -35,14 +36,10 @@ export default function SplashScreen({ onDone }: SplashScreenProps) {
         pointerEvents: leaving ? "none" : "all",
       }}
     >
-      {/* Logo */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/actinver-logo.svg"
-        alt="Actinver"
-        className="splash-logo-in"
-        style={{ width: 148, height: "auto" }}
-      />
+      {/* Logo — inline SVG para consistencia con el canvas y evitar problemas CORS */}
+      <div className="splash-logo-in">
+        <ActinverLogo width={148} height={36} />
+      </div>
 
       {/* Línea sunset + subtítulo */}
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>

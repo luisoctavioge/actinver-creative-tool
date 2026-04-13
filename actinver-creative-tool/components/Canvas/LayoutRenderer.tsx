@@ -6,6 +6,7 @@
 
 import { FormatKey, NATIVE, PieceContent, LogoAlign } from "@/lib/templates";
 import { LayoutTokens } from "@/lib/layouts";
+import ActinverLogo from "./ActinverLogo";
 
 const BG = "#0a0e12";
 
@@ -58,18 +59,11 @@ export default function LayoutRenderer({ format, tokens, content, imageUrl, isLo
         display: "flex", alignItems: "center", justifyContent: "space-between",
         flexDirection: headerReversed ? "row-reverse" : "row",
       }}>
-        {/* Logo */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/actinver-logo.svg"
-          alt="Actinver"
-          data-export-logo="true"
+        {/* Logo — inline SVG para que html2canvas renderice los fills correctamente */}
+        <ActinverLogo
           width={t.logo.width}
           height={t.logo.height}
           style={{
-            width: t.logo.width,
-            height: t.logo.height,
-            objectFit: "contain",
             filter: "drop-shadow(0 1px 4px rgba(0,0,0,0.80)) drop-shadow(0 2px 12px rgba(0,0,0,0.50))",
           }}
         />
