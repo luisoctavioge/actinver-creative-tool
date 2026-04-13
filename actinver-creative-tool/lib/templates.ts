@@ -92,6 +92,8 @@ export type EdadRango = "25-35" | "36-50" | "51-65";
 export type TipoPieza = "educativa" | "promo" | "institucional";
 
 // ── Brief del usuario (inputs del editor) ────────────────────────────────────
+export type LogoAlign = "left" | "right";
+
 export interface CreatorInput {
   product: string;           // Producto o tema del que quieres hablar
   message: string;           // Qué quieres comunicar
@@ -101,6 +103,7 @@ export interface CreatorInput {
   tipoPieza: TipoPieza;      // Tipo de pieza (educativa / promo / institucional)
   conCTA: boolean;           // Incluir llamada a la acción
   conBadge: boolean;         // Mostrar badge "El privilegio de ser Fundador"
+  logoAlign: LogoAlign;      // Alineación del logo (izquierda / derecha)
 }
 
 export const CREATOR_LIMITS = {
@@ -117,6 +120,7 @@ export const DEFAULT_CREATOR_INPUT: CreatorInput = {
   tipoPieza: "educativa",
   conCTA: true,
   conBadge: true,
+  logoAlign: "left",
 };
 
 // ── Contenido generado (lo que va en la pieza) ────────────────────────────────

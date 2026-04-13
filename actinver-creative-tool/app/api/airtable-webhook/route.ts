@@ -97,6 +97,7 @@ function normalizeFields(fields: Partial<FormFields>): CreatorInput {
     tipoPieza: tipoMap[fields.TipoPieza ?? ""] ?? "educativa",
     conCTA:    true,
     conBadge:  true,
+    logoAlign: "left",
   };
 }
 

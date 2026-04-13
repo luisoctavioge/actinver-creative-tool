@@ -1,11 +1,10 @@
-// Exporta los 3 formatos como PNG en un ZIP descargable.
+// Exporta los 4 formatos como PNG en un ZIP descargable.
 //
-// Estrategia de captura:
-// 1. Para cada formato, clonamos el elemento DOM al body con opacity:1.
-// 2. Esperamos que todos los <img> del clon hayan cargado.
-// 3. html2canvas captura el clon con el factor de escala correcto.
-// 4. En onclone se parchean los `backdrop-filter` que html2canvas no soporta.
-// 5. El clon se elimina antes de pasar al siguiente formato.
+// Fixes clave vs html2canvas:
+//   1. SVG logos: html2canvas no renderiza <img src="*.svg">. Los convertimos
+//      a PNG data URL via Canvas API antes de capturar.
+//   2. border-radius: los export refs usan forExport=true que lo pone a 0.
+//   3. backdrop-filter: no soportado, se simula con gradiente sólido.
 
 import JSZip from "jszip";
 
@@ -22,7 +21,6 @@ function waitForPaint(): Promise<void> {
   );
 }
 
-// Espera a que todos los <img> del elemento hayan cargado su src.
 function waitForImages(el: HTMLElement): Promise<void> {
   const imgs = Array.from(el.querySelectorAll<HTMLImageElement>("img"));
   return Promise.all(
@@ -37,33 +35,66 @@ function waitForImages(el: HTMLElement): Promise<void> {
   ).then(() => undefined);
 }
 
-// Sustituye backdrop-filter por un fondo sólido equivalente
-// (los elementos llevan data-export-glass para identificarlos).
+// Convierte un SVG (desde URL) a PNG data URL usando un canvas offscreen.
+// Esto es necesario porque html2canvas no renderiza <img src="*.svg">.
+async function svgToPngDataUrl(svgUrl: string, targetW: number, targetH: number): Promise<string> {
+  const res = await fetch(svgUrl);
+  const svgText = await res.text();
+  const blob = new Blob([svgText], { type: "image/svg+xml;charset=utf-8" });
+  const blobUrl = URL.createObjectURL(blob);
+
+  return new Promise((resolve, reject) => {
+    const img = new Image(targetW * 3, targetH * 3);
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width  = targetW * 3;
+      canvas.height = targetH * 3;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) { reject(new Error("No canvas context")); return; }
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL("image/png"));
+      URL.revokeObjectURL(blobUrl);
+    };
+    img.onerror = () => { URL.revokeObjectURL(blobUrl); reject(new Error("SVG load error")); };
+    img.src = blobUrl;
+  });
+}
+
+// Sustituye backdrop-filter por un fondo sólido equivalente.
 function patchBackdropFilter(clonedDoc: Document): void {
   clonedDoc.querySelectorAll<HTMLElement>("[data-export-glass]").forEach((el) => {
     el.style.backdropFilter = "none";
     el.style.setProperty("-webkit-backdrop-filter", "none");
-    // Gradiente sutil que simula el glass effect en lugar de un flat color
     el.style.background = "linear-gradient(135deg, rgba(10,14,18,0.85), rgba(26,36,51,0.80))";
   });
 }
 
-async function captureElement(el: HTMLElement, scale: number): Promise<Blob> {
-  // Clonamos al body para que tenga su propio contexto de apilamiento
-  // y no herede opacity ni z-index del contenedor oculto.
+// Reemplaza todos los <img data-export-logo> con la versión PNG precargada.
+function patchSvgLogos(clonedDoc: Document, logoPngDataUrl: string): void {
+  clonedDoc.querySelectorAll<HTMLImageElement>("img[data-export-logo]").forEach((img) => {
+    img.src = logoPngDataUrl;
+    // Forzar que se muestre aunque sea pequeño
+    img.style.display = "block";
+  });
+}
+
+async function captureElement(
+  el: HTMLElement,
+  scale: number,
+  logoPngDataUrl: string,
+): Promise<Blob> {
   const clone = el.cloneNode(true) as HTMLElement;
   Object.assign(clone.style, {
     position:      "fixed",
     top:           "0",
     left:          "0",
     zIndex:        "999999",
-    opacity:       "1",       // ← crítico: opacity:0.001 causaba el negro
+    opacity:       "1",
     pointerEvents: "none",
     display:       "inline-block",
   });
   document.body.appendChild(clone);
 
-  // Dar tiempo al navegador para pintar el clon y decodificar las imágenes.
   await waitForPaint();
   await waitForImages(clone);
   await waitForPaint();
@@ -77,8 +108,9 @@ async function captureElement(el: HTMLElement, scale: number): Promise<Blob> {
       allowTaint:      false,
       backgroundColor: "#0a0e12",
       logging:         false,
-      onclone: (_clonedDoc) => {
-        patchBackdropFilter(_clonedDoc);
+      onclone: (clonedDoc) => {
+        patchBackdropFilter(clonedDoc);
+        patchSvgLogos(clonedDoc, logoPngDataUrl);
       },
     });
 
@@ -99,13 +131,17 @@ export async function downloadAllFormats(refs: {
   horizontal: HTMLElement | null;
   poster:     HTMLElement | null;
 }): Promise<void> {
+  // Pre-cargar el logo SVG como PNG una sola vez para todos los formatos.
+  // Usamos el tamaño mayor (horizontal) para máxima calidad.
+  const logoPngDataUrl = await svgToPngDataUrl("/actinver-logo.svg", 180, 54).catch(() => "");
+
   const zip = new JSZip();
 
   for (const [fmt, cfg] of Object.entries(EXPORT) as [keyof typeof EXPORT, (typeof EXPORT)[keyof typeof EXPORT]][]) {
     const el = refs[fmt];
     if (!el) throw new Error(`Falta el elemento para el formato "${fmt}"`);
 
-    const blob = await captureElement(el, cfg.scale);
+    const blob = await captureElement(el, cfg.scale, logoPngDataUrl);
     zip.file(`actinver-${cfg.label}.png`, blob);
   }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { CreatorInput, PieceContent, CHAR_LIMITS, CREATOR_LIMITS, SOCIAL_CHANNELS, SocialChannel, Genero, EdadRango, TipoPieza } from "@/lib/templates";
+import { CreatorInput, PieceContent, CHAR_LIMITS, CREATOR_LIMITS, SOCIAL_CHANNELS, SocialChannel, Genero, EdadRango, TipoPieza, LogoAlign } from "@/lib/templates";
 import { GenerationStatus } from "@/app/page";
 
 // ── Tipo de ficha de producto (mirror de lib/fichas/index.ts) ─────────────────
@@ -394,6 +394,73 @@ function ChannelSelector({
   );
 }
 
+// ── Selector de alineación del logo ──────────────────────────────────────────
+
+function LogoAlignSelector({
+  value,
+  disabled,
+  onChange,
+}: {
+  value: LogoAlign;
+  disabled: boolean;
+  onChange: (v: LogoAlign) => void;
+}) {
+  const options: { key: LogoAlign; label: string; icon: React.ReactNode }[] = [
+    {
+      key: "left",
+      label: "Izquierda",
+      icon: (
+        <svg width="28" height="16" viewBox="0 0 28 16" fill="none">
+          {/* Logo rect izquierda */}
+          <rect x="2" y="5" width="10" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+          {/* Badge pill derecha */}
+          <rect x="16" y="5" width="10" height="6" rx="3" stroke="currentColor" strokeWidth="1.1" strokeDasharray="2 1.5" />
+        </svg>
+      ),
+    },
+    {
+      key: "right",
+      label: "Derecha",
+      icon: (
+        <svg width="28" height="16" viewBox="0 0 28 16" fill="none">
+          {/* Badge pill izquierda */}
+          <rect x="2" y="5" width="10" height="6" rx="3" stroke="currentColor" strokeWidth="1.1" strokeDasharray="2 1.5" />
+          {/* Logo rect derecha */}
+          <rect x="16" y="5" width="10" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+        </svg>
+      ),
+    },
+  ];
+
+  return (
+    <div className="flex gap-1.5">
+      {options.map(({ key, label, icon }) => {
+        const isActive = value === key;
+        return (
+          <button
+            key={key}
+            type="button"
+            onClick={() => { if (!disabled) onChange(key); }}
+            disabled={disabled}
+            title={label}
+            className={`
+              flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-legal font-open-sans border transition-all duration-150
+              ${disabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer active:scale-[0.96]"}
+              ${isActive
+                ? "bg-sunset/15 border-sunset/50 text-sunset"
+                : "bg-transparent border-white/10 text-white/35 hover:border-white/20 hover:text-white/50"
+              }
+            `}
+          >
+            {icon}
+            <span>{label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 // ── Sección de Brief ───────────────────────────────────────────────────────────
 // Exportada para usarse directamente en el panel izquierdo de page.tsx
 
@@ -498,6 +565,18 @@ export function BriefSection({
               checked={creatorInput.conBadge}
               disabled={isLoading}
               onChange={(v) => onChange({ ...creatorInput, conBadge: v })}
+            />
+          </div>
+
+          {/* Alineación del logo */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-legal uppercase tracking-widest text-white/50 font-open-sans font-medium">
+              Logo
+            </label>
+            <LogoAlignSelector
+              value={creatorInput.logoAlign}
+              disabled={isLoading}
+              onChange={(v) => onChange({ ...creatorInput, logoAlign: v })}
             />
           </div>
         </div>

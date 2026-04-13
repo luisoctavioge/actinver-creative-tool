@@ -4,7 +4,7 @@
 // en lugar de hardcodearlos. Mismo DOM e inline styles que los canvas originales
 // (requerido para html2canvas).
 
-import { FormatKey, NATIVE, PieceContent } from "@/lib/templates";
+import { FormatKey, NATIVE, PieceContent, LogoAlign } from "@/lib/templates";
 import { LayoutTokens } from "@/lib/layouts";
 
 const BG = "#0a0e12";
@@ -16,15 +16,19 @@ interface LayoutRendererProps {
   imageUrl: string | null;
   isLoading: boolean;
   showBadge?: boolean;
+  logoAlign?: LogoAlign;
+  forExport?: boolean;
 }
 
-export default function LayoutRenderer({ format, tokens, content, imageUrl, isLoading, showBadge = true }: LayoutRendererProps) {
+export default function LayoutRenderer({ format, tokens, content, imageUrl, isLoading, showBadge = true, logoAlign = "left", forExport = false }: LayoutRendererProps) {
   const { w, h } = NATIVE[format];
   const hasContent = content.title.trim().length > 0;
   const t = tokens;
+  // Cuando el logo está a la derecha, el badge se mueve a la izquierda y viceversa
+  const headerReversed = logoAlign === "right";
 
   return (
-    <div style={{ position: "relative", width: w, height: h, overflow: "hidden", borderRadius: 20, background: BG }}>
+    <div style={{ position: "relative", width: w, height: h, overflow: "hidden", borderRadius: forExport ? 0 : 20, background: BG }}>
       {/* Background */}
       {isLoading ? (
         <>
@@ -52,12 +56,14 @@ export default function LayoutRenderer({ format, tokens, content, imageUrl, isLo
         paddingLeft: t.header.paddingX,
         paddingRight: t.header.paddingX,
         display: "flex", alignItems: "center", justifyContent: "space-between",
+        flexDirection: headerReversed ? "row-reverse" : "row",
       }}>
         {/* Logo */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/actinver-logo.svg"
           alt="Actinver"
+          data-export-logo="true"
           width={t.logo.width}
           height={t.logo.height}
           style={{

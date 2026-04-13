@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect, useCallback } from "react";
-import { FormatKey, FORMATS, NATIVE, PieceContent } from "@/lib/templates";
+import { FormatKey, FORMATS, NATIVE, PieceContent, LogoAlign } from "@/lib/templates";
 import { DEFAULT_LAYOUT } from "@/lib/layouts";
 import LayoutRenderer from "./LayoutRenderer";
 
@@ -13,6 +13,7 @@ interface CanvasPreviewProps {
   imageHistory?: string[];
   onSelectHistoryImage?: (url: string) => void;
   showBadge?: boolean;
+  logoAlign?: LogoAlign;
 }
 
 // ── Hook: calcula el scale para que el canvas nativo quepa en su contenedor ───
@@ -38,7 +39,7 @@ function useCanvasScale(nativeW: number, nativeH: number) {
 }
 
 // ── Componente principal ───────────────────────────────────────────────────────
-export default function CanvasPreview({ format, content, imageUrl, isLoading, imageHistory, onSelectHistoryImage, showBadge = true }: CanvasPreviewProps) {
+export default function CanvasPreview({ format, content, imageUrl, isLoading, imageHistory, onSelectHistoryImage, showBadge = true, logoAlign = "left" }: CanvasPreviewProps) {
   const fmt = FORMATS[format];
   const { w: nativeW, h: nativeH } = NATIVE[format];
   const { containerRef, scale } = useCanvasScale(nativeW, nativeH);
@@ -66,10 +67,10 @@ export default function CanvasPreview({ format, content, imageUrl, isLoading, im
                 transform: `scale(${scale})`,
               }}
             >
-              {format === "story"      && <StoryCanvas      content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} />}
-              {format === "square"     && <SquareCanvas     content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} />}
-              {format === "horizontal" && <HorizontalCanvas content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} />}
-              {format === "poster"     && <PosterCanvas     content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} />}
+              {format === "story"      && <StoryCanvas      content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} logoAlign={logoAlign} />}
+              {format === "square"     && <SquareCanvas     content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} logoAlign={logoAlign} />}
+              {format === "horizontal" && <HorizontalCanvas content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} logoAlign={logoAlign} />}
+              {format === "poster"     && <PosterCanvas     content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} logoAlign={logoAlign} />}
             </div>
           </div>
         </div>
@@ -106,25 +107,25 @@ export interface CanvasProps {
   imageUrl: string | null;
   isLoading: boolean;
   showBadge?: boolean;
+  logoAlign?: LogoAlign;
+  forExport?: boolean;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Wrappers que delegan al LayoutRenderer genérico con DEFAULT_LAYOUT.
-// Se mantienen como exports nombrados para compatibilidad con page.tsx y
-// FormatToolbar. Agregar un nuevo layout = definir otro LayoutConfig.
 // ─────────────────────────────────────────────────────────────────────────────
-export function StoryCanvas({ content, imageUrl, isLoading, showBadge }: CanvasProps) {
-  return <LayoutRenderer format="story" tokens={DEFAULT_LAYOUT.tokens.story} content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} />;
+export function StoryCanvas({ content, imageUrl, isLoading, showBadge, logoAlign, forExport }: CanvasProps) {
+  return <LayoutRenderer format="story" tokens={DEFAULT_LAYOUT.tokens.story} content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} logoAlign={logoAlign} forExport={forExport} />;
 }
 
-export function SquareCanvas({ content, imageUrl, isLoading, showBadge }: CanvasProps) {
-  return <LayoutRenderer format="square" tokens={DEFAULT_LAYOUT.tokens.square} content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} />;
+export function SquareCanvas({ content, imageUrl, isLoading, showBadge, logoAlign, forExport }: CanvasProps) {
+  return <LayoutRenderer format="square" tokens={DEFAULT_LAYOUT.tokens.square} content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} logoAlign={logoAlign} forExport={forExport} />;
 }
 
-export function HorizontalCanvas({ content, imageUrl, isLoading, showBadge }: CanvasProps) {
-  return <LayoutRenderer format="horizontal" tokens={DEFAULT_LAYOUT.tokens.horizontal} content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} />;
+export function HorizontalCanvas({ content, imageUrl, isLoading, showBadge, logoAlign, forExport }: CanvasProps) {
+  return <LayoutRenderer format="horizontal" tokens={DEFAULT_LAYOUT.tokens.horizontal} content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} logoAlign={logoAlign} forExport={forExport} />;
 }
 
-export function PosterCanvas({ content, imageUrl, isLoading, showBadge }: CanvasProps) {
-  return <LayoutRenderer format="poster" tokens={DEFAULT_LAYOUT.tokens.poster} content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} />;
+export function PosterCanvas({ content, imageUrl, isLoading, showBadge, logoAlign, forExport }: CanvasProps) {
+  return <LayoutRenderer format="poster" tokens={DEFAULT_LAYOUT.tokens.poster} content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} logoAlign={logoAlign} forExport={forExport} />;
 }

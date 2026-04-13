@@ -377,6 +377,7 @@ export default function Home() {
             isLoading={imageStatus === "loading"}
             imageHistory={imageHistory}
             showBadge={creatorInput.conBadge}
+            logoAlign={creatorInput.logoAlign}
             onSelectHistoryImage={(url) => {
               setGeneratedImageUrl(url);
               setImageStatus("success");
@@ -426,10 +427,10 @@ export default function Home() {
       {/* ── Capa de exportación — movida al viewport durante la captura por lib/export.ts ── */}
       {/* Los refs apuntan al contenedor directo del canvas nativo (sin transform:scale). */}
       <div aria-hidden style={{ position: "fixed", left: -9999, top: 0, pointerEvents: "none", zIndex: -1 }}>
-        <div ref={exportRefs.story}      style={{ display: "inline-block" }}><StoryCanvas      content={content} imageUrl={generatedImageUrl} isLoading={false} showBadge={creatorInput.conBadge} /></div>
-        <div ref={exportRefs.square}     style={{ display: "inline-block" }}><SquareCanvas     content={content} imageUrl={generatedImageUrl} isLoading={false} showBadge={creatorInput.conBadge} /></div>
-        <div ref={exportRefs.horizontal} style={{ display: "inline-block" }}><HorizontalCanvas content={content} imageUrl={generatedImageUrl} isLoading={false} showBadge={creatorInput.conBadge} /></div>
-        <div ref={exportRefs.poster}     style={{ display: "inline-block" }}><PosterCanvas     content={content} imageUrl={generatedImageUrl} isLoading={false} showBadge={creatorInput.conBadge} /></div>
+        <div ref={exportRefs.story}      style={{ display: "inline-block" }}><StoryCanvas      content={content} imageUrl={generatedImageUrl} isLoading={false} showBadge={creatorInput.conBadge} logoAlign={creatorInput.logoAlign} forExport /></div>
+        <div ref={exportRefs.square}     style={{ display: "inline-block" }}><SquareCanvas     content={content} imageUrl={generatedImageUrl} isLoading={false} showBadge={creatorInput.conBadge} logoAlign={creatorInput.logoAlign} forExport /></div>
+        <div ref={exportRefs.horizontal} style={{ display: "inline-block" }}><HorizontalCanvas content={content} imageUrl={generatedImageUrl} isLoading={false} showBadge={creatorInput.conBadge} logoAlign={creatorInput.logoAlign} forExport /></div>
+        <div ref={exportRefs.poster}     style={{ display: "inline-block" }}><PosterCanvas     content={content} imageUrl={generatedImageUrl} isLoading={false} showBadge={creatorInput.conBadge} logoAlign={creatorInput.logoAlign} forExport /></div>
       </div>
 
       {/* ── Overlay fullscreen del brandbook ──────────────────────── */}
@@ -477,7 +478,7 @@ export default function Home() {
             <span className="text-sunset/70">Contenido listo — genera el fondo</span>
           )}
           {globalStatus === "error" && <span className="text-red-400/70">Error al generar</span>}
-          {globalStatus === "idle" && <span className="text-white/20">DINN 2025</span>}
+          {globalStatus === "idle" && <span className="text-white/20">Actinver Creative Tool</span>}
         </span>
       </footer>
     </div>
