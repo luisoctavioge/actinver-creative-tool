@@ -8,10 +8,13 @@ import { fal } from "@fal-ai/client";
 import OpenAI from "openai";
 import { buildAIPrompt } from "./gemini";
 import { PieceContent } from "./templates";
+import type { ProductFicha } from "./fichas";
 
 export interface ImageParams {
   product: string;
   content: PieceContent;
+  message?: string;
+  ficha?: ProductFicha | null;
   excludeIds?: string[];
 }
 
@@ -47,11 +50,27 @@ function pickRandom<T>(arr: T[]): T {
 // ─────────────────────────────────────────────────────────────────────────────
 // TAGS DINÁMICOS — Groq convierte el brief en keywords en inglés para Pexels
 // ─────────────────────────────────────────────────────────────────────────────
-async function resolveSearchQuery(product: string, content: PieceContent): Promise<string> {
+async function resolveSearchQuery(
+  product: string,
+  content: PieceContent,
+  message?: string,
+  ficha?: ProductFicha | null,
+): Promise<string> {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) return `${product} professional lifestyle photography`;
 
   const angle = pickRandom(ANGLE_MODIFIERS);
+
+  // Enriquecer el contexto con ficha y mensaje
+  const contextParts: string[] = [`Product: ${product}`];
+  if (message && message.trim()) contextParts.push(`Key message: ${message.trim()}`);
+  if (content.title) contextParts.push(`Headline: ${content.title}`);
+  if (ficha) {
+    contextParts.push(`Category: ${ficha.categoria}`);
+    contextParts.push(`Description: ${ficha.descripcion}`);
+    contextParts.push(`Target audience: ${ficha.publicoObjetivo}`);
+  }
+  const briefContext = contextParts.join(". ");
 
   try {
     const client = new OpenAI({ apiKey, baseURL: "https://api.groq.com/openai/v1" });
@@ -64,15 +83,16 @@ async function resolveSearchQuery(product: string, content: PieceContent): Promi
           content: `You generate concise English search queries for Pexels stock photography.
 Rules:
 - Return ONLY 3-5 English keywords, nothing else
-- Keywords must describe a visual scene (people, objects, places, mood)
-- Prefer cinematic, moody, professional photography
+- Keywords must describe a SPECIFIC visual scene relevant to the product and message
+- Prefer cinematic, moody, professional, luxury photography
 - No abstract concepts — describe what a camera would capture
 - IMPORTANT: Every call must produce COMPLETELY DIFFERENT keywords. Be creative and surprising.
-- Examples: "luxury car night rain", "executive skyline twilight", "chef cooking restaurant kitchen"`,
+- The scene must be OBVIOUSLY related to the product/service being advertised
+- Examples: "luxury car night rain", "executive skyline twilight", "family warm home evening"`,
         },
         {
           role: "user",
-          content: `Social media piece topic: ${product}. Title: ${content.title || "(none)"}. Visual angle: ${angle}. Generate Pexels keywords:`,
+          content: `${briefContext}. Visual angle: ${angle}. Generate Pexels keywords:`,
         },
       ],
       max_tokens: 30,
@@ -121,7 +141,7 @@ export async function generateImageFromPexels(params: ImageParams): Promise<Imag
 
   const excludeSet = new Set(params.excludeIds ?? []);
 
-  const primaryQuery = await resolveSearchQuery(params.product, params.content);
+  const primaryQuery = await resolveSearchQuery(params.product, params.content, params.message, params.ficha);
   let pick = await searchPexels(primaryQuery, apiKey, excludeSet);
 
   if (!pick && params.product && params.product.length < 60) {
@@ -164,8 +184,13 @@ export async function generateImageWithAI(params: ImageParams): Promise<ImageRes
   // Configurar credenciales por request (seguro en serverless)
   fal.config({ credentials: falKey });
 
-  const prompt = buildAIPrompt(params.product, params.content);
-  console.log(`[fal.ai] Flux Pro 1.1 Ultra — prompt: "${prompt.slice(0, 120)}..."`);
+  const prompt = buildAIPrompt(
+    params.product,
+    params.content,
+    params.message,
+    params.ficha,
+  );
+  console.log(`[fal.ai] Flux Pro 1.1 Ultra — prompt (${prompt.length} chars): "${prompt.slice(0, 200)}..."`);
 
   const result = await fal.subscribe("fal-ai/flux-pro/v1.1-ultra", {
     input: {

@@ -83,6 +83,7 @@ export default function Home() {
           product: creatorInput.product,
           content,
           provider,
+          message: creatorInput.message,
           excludeIds: provider === "pexels" ? seenPexelsIds : undefined,
         }),
       });
@@ -100,7 +101,7 @@ export default function Home() {
       setImageError(err instanceof Error ? err.message : "Error desconocido.");
       setImageStatus("error");
     }
-  }, [content, creatorInput.product, seenPexelsIds]);
+  }, [content, creatorInput.product, creatorInput.message, seenPexelsIds]);
 
   // ── Crear pieza completa (texto + imagen + variantes en paralelo) ──────────
   const handleCreateFull = useCallback(async () => {
@@ -158,6 +159,7 @@ export default function Home() {
           product: creatorInput.product,
           content: generatedContent,
           provider: "pexels",
+          message: creatorInput.message,
           excludeIds: seenPexelsIds,
         }),
       }).then((r) => r.json().then((d) => ({ ok: r.ok, ...d }))),
