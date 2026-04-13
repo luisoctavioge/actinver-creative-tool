@@ -291,10 +291,6 @@ export default function Home() {
           <span className="font-poppins font-light text-white text-xl tracking-tight">
             Actinver
           </span>
-          <span
-            className="rounded-full"
-            style={{ width: "5px", height: "5px", backgroundColor: "#E6C78A", position: "relative", top: "-6px" }}
-          />
           <span className="ml-2 text-white/20 font-open-sans text-legal">|</span>
           <span className="ml-2 text-white/40 font-open-sans text-legal uppercase tracking-widest">
             Creative Tool
