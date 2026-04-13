@@ -749,21 +749,14 @@ export function BriefSection({
   onCreateFull,
   status,
   error,
-  variants,
-  variantsStatus,
-  onSelectVariant,
 }: {
   creatorInput: CreatorInput;
   onChange: (input: CreatorInput) => void;
   onCreateFull: () => void;
   status: GenerationStatus;
   error: string | null;
-  variants: PieceContent[];
-  variantsStatus: GenerationStatus;
-  onSelectVariant: (variant: PieceContent) => void;
 }) {
   const isLoading = status === "loading";
-  const isVariantsLoading = variantsStatus === "loading";
   const canGenerate = (creatorInput.product.trim().length > 0 || creatorInput.message.trim().length > 0) && !isLoading;
 
   const showCaptions = channelNeedsCaptions(creatorInput.selectedChannels);
@@ -979,36 +972,6 @@ export function BriefSection({
         )}
       </div>
 
-      {/* 3 variantes de copy */}
-      {(isVariantsLoading || variants.length > 0) && (
-        <>
-          <div className="border-t border-white/10" />
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2">
-              {isVariantsLoading ? <Spinner /> : <VariantsIcon />}
-              <span className="text-legal font-poppins font-semibold text-white/50 uppercase tracking-widest">
-                {isVariantsLoading ? "Generando variantes..." : "3 variantes de copy"}
-              </span>
-            </div>
-
-            {variants.length > 0 && (
-              <div className="flex flex-col gap-2">
-                {variants.map((v, i) => (
-                  <button
-                    key={i}
-                    onClick={() => onSelectVariant(v)}
-                    className="text-left p-3 rounded-lg border border-white/10 bg-azul-acompanamiento/40 hover:border-sunset/40 hover:bg-azul-acompanamiento/70 transition-all duration-150 group"
-                  >
-                    <p className="text-legal font-poppins font-bold text-white group-hover:text-sunset transition-colors line-clamp-1">{v.title}</p>
-                    <p className="text-legal font-open-sans text-white/40 mt-0.5 line-clamp-2 leading-snug">{v.description}</p>
-                    <p className="text-legal font-open-sans text-sunset/60 mt-1">{v.cta}</p>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        </>
-      )}
     </div>
   );
 }
@@ -1025,6 +988,9 @@ export function PieceSection({
   imageError,
   contentReady,
   onSaveReference,
+  variants,
+  variantsStatus,
+  onSelectVariant,
 }: {
   content: PieceContent;
   onChange: (content: PieceContent) => void;
@@ -1035,6 +1001,9 @@ export function PieceSection({
   imageError: string | null;
   contentReady: boolean;
   onSaveReference?: () => void;
+  variants?: PieceContent[];
+  variantsStatus?: GenerationStatus;
+  onSelectVariant?: (variant: PieceContent) => void;
 }) {
   const isLoading = imageStatus === "loading";
   const canGenerate = content.title.trim().length > 0 && !isLoading;
@@ -1064,8 +1033,8 @@ export function PieceSection({
       <div className="flex flex-col gap-3">
         {(["title", "description", "cta"] as const).map((field) => {
           const cfg = {
-            title:       { label: "Título",      maxLength: CHAR_LIMITS.title,       placeholder: "Aparecerá aquí tras generar el contenido...", rows: 1 },
-            description: { label: "Descripción", maxLength: CHAR_LIMITS.description, placeholder: "Descripción breve de la pieza...",             rows: 4 },
+            title:       { label: "Título",      maxLength: CHAR_LIMITS.title,       placeholder: "Aparecerá aquí tras generar el contenido...", rows: 3 },
+            description: { label: "Descripción", maxLength: CHAR_LIMITS.description, placeholder: "Descripción breve de la pieza...",             rows: 6 },
             cta:         { label: "CTA",         maxLength: CHAR_LIMITS.cta,         placeholder: "Llamada a la acción...",                       rows: 1 },
           }[field];
           const spinning = regeneratingField === field;
@@ -1161,6 +1130,37 @@ export function PieceSection({
             </p>
           )}
         </div>
+      )}
+
+      {/* 3 variantes de copy */}
+      {((variantsStatus === "loading") || (variants && variants.length > 0)) && (
+        <>
+          <div className="border-t border-white/10" />
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              {variantsStatus === "loading" ? <Spinner /> : <VariantsIcon />}
+              <span className="text-legal font-poppins font-semibold text-white/50 uppercase tracking-widest">
+                {variantsStatus === "loading" ? "Generando variantes..." : "3 variantes de copy"}
+              </span>
+            </div>
+
+            {variants && variants.length > 0 && onSelectVariant && (
+              <div className="flex flex-col gap-2">
+                {variants.map((v, i) => (
+                  <button
+                    key={i}
+                    onClick={() => onSelectVariant(v)}
+                    className="text-left p-3 rounded-lg border border-white/10 bg-azul-acompanamiento/40 hover:border-sunset/40 hover:bg-azul-acompanamiento/70 transition-all duration-150 group"
+                  >
+                    <p className="text-legal font-poppins font-bold text-white group-hover:text-sunset transition-colors line-clamp-2">{v.title}</p>
+                    <p className="text-legal font-open-sans text-white/40 mt-0.5 line-clamp-2 leading-snug">{v.description}</p>
+                    <p className="text-legal font-open-sans text-sunset/60 mt-1">{v.cta}</p>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </>
       )}
     </div>
   );

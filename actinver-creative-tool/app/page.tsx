@@ -46,9 +46,6 @@ export default function Home() {
                   onCreateFull={s.handleRequestCreate}
                   status={s.contentStatus}
                   error={s.contentError}
-                  variants={s.variants}
-                  variantsStatus={s.variantsStatus}
-                  onSelectVariant={s.handleSelectVariant}
                 />
               </div>
             </div>
@@ -85,6 +82,9 @@ export default function Home() {
                   imageError={s.imageError}
                   contentReady={s.contentStatus === "success"}
                   onSaveReference={s.handleSaveReference}
+                  variants={s.variants}
+                  variantsStatus={s.variantsStatus}
+                  onSelectVariant={s.handleSelectVariant}
                 />
               </div>
             </div>

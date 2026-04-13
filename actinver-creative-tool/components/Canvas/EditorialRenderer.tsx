@@ -88,18 +88,16 @@ export default function EditorialRenderer({
             />
           </>
         ) : imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={imageUrl}
-            alt=""
+          // background-image + backgroundSize:cover evita el estiramiento en html2canvas
+          // (html2canvas no soporta object-fit en <img> tags)
+          <div
             aria-hidden
             style={{
               position: "absolute",
               inset: 0,
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              objectPosition: "center",
+              backgroundImage: `url(${imageUrl})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center top",
               filter: "saturate(0.85) brightness(0.90)",
             }}
           />
@@ -139,9 +137,9 @@ export default function EditorialRenderer({
               right: t.categoryLabel.paddingRight,
               fontFamily: "var(--font-open-sans)",
               fontSize: t.categoryLabel.fontSize,
-              color: "#E5C78A",
-              fontStyle: "italic",
-              letterSpacing: "0.06em",
+              fontWeight: 600,
+              color: "rgba(160, 190, 225, 0.70)",
+              letterSpacing: "0.08em",
               textShadow: "0 1px 6px rgba(0,0,0,0.6)",
             }}
           >

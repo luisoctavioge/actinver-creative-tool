@@ -41,11 +41,10 @@ export default function LayoutRenderer({ format, tokens, content, imageUrl, isLo
           <div style={{ position: "absolute", inset: 0, background: "rgba(255,255,255,0.03)", animation: "pulse 2s cubic-bezier(0.4,0,0.6,1) infinite" }} />
         </>
       ) : imageUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={imageUrl} alt="" aria-hidden style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", filter: "saturate(0.80) brightness(0.93)" }} />
+        // background-image + backgroundSize:cover evita el estiramiento en html2canvas
+        <div aria-hidden style={{ position: "absolute", inset: 0, backgroundImage: `url(${imageUrl})`, backgroundSize: "cover", backgroundPosition: "center", filter: "saturate(0.80) brightness(0.93)" }} />
       ) : (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src="/default-bg.jpg" alt="" aria-hidden style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", opacity: 0.6, filter: "saturate(0.80) brightness(0.93)" }} />
+        <div aria-hidden style={{ position: "absolute", inset: 0, backgroundImage: "url(/default-bg.jpg)", backgroundSize: "cover", backgroundPosition: "center", opacity: 0.6, filter: "saturate(0.80) brightness(0.93)" }} />
       )}
 
       {/* Cool tint overlay — aporta el tono ligeramente frío cinematográfico, compatible con html2canvas */}
