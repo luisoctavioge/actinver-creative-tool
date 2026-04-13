@@ -15,10 +15,12 @@ import CanvasPreview, { StoryCanvas, SquareCanvas, HorizontalCanvas, PosterCanva
 import { downloadAllFormats } from "@/lib/export";
 import CaptionPanel from "@/components/CaptionPanel/CaptionPanel";
 import { ChannelCaption } from "@/lib/templates";
+import SplashScreen from "@/components/SplashScreen";
 
 export type GenerationStatus = "idle" | "loading" | "success" | "error";
 
 export default function Home() {
+  const [splashDone, setSplashDone] = useState(false);
   const [format, setFormat] = useState<FormatKey>(DEFAULT_FORMAT);
 
   // Panel abierto: solo uno puede estar abierto al mismo tiempo
@@ -284,6 +286,8 @@ export default function Home() {
   const globalStatus = imageStatus !== "idle" ? imageStatus : contentStatus;
 
   return (
+    <>
+      {!splashDone && <SplashScreen onDone={() => setSplashDone(true)} />}
     <div className="flex flex-col h-screen bg-azul-grandeza overflow-hidden">
       {/* ── Top bar ─────────────────────────────────────────────── */}
       <header className="flex items-center justify-between px-6 py-3 border-b border-white/10 bg-azul-grandeza/95 backdrop-blur-sm shrink-0">
@@ -482,6 +486,7 @@ export default function Home() {
         </span>
       </footer>
     </div>
+    </>
   );
 }
 
