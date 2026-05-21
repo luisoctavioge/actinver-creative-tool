@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect, useCallback } from "react";
-import { FormatKey, FORMATS, NATIVE, PieceContent } from "@/lib/templates";
+import { FormatKey, FORMATS, NATIVE, PieceContent, LogoAlign, CardStyle } from "@/lib/templates";
 import { DEFAULT_LAYOUT } from "@/lib/layouts";
 import LayoutRenderer from "./LayoutRenderer";
 
@@ -13,6 +13,12 @@ interface CanvasPreviewProps {
   imageHistory?: string[];
   onSelectHistoryImage?: (url: string) => void;
   showBadge?: boolean;
+  logoAlign?: LogoAlign;
+  cardStyle?: CardStyle;
+  imagePosition?: { x: number; y: number };
+  onImagePositionChange?: (pos: { x: number; y: number }) => void;
+  imageZoom?: number;
+  onImageZoomChange?: (zoom: number) => void;
 }
 
 // ── Hook: calcula el scale para que el canvas nativo quepa en su contenedor ───
@@ -38,10 +44,56 @@ function useCanvasScale(nativeW: number, nativeH: number) {
 }
 
 // ── Componente principal ───────────────────────────────────────────────────────
-export default function CanvasPreview({ format, content, imageUrl, isLoading, imageHistory, onSelectHistoryImage, showBadge = true }: CanvasPreviewProps) {
+export default function CanvasPreview({ format, content, imageUrl, isLoading, imageHistory, onSelectHistoryImage, showBadge = true, logoAlign = "left", cardStyle = "solid", imagePosition, onImagePositionChange, imageZoom = 1, onImageZoomChange }: CanvasPreviewProps) {
   const fmt = FORMATS[format];
   const { w: nativeW, h: nativeH } = NATIVE[format];
   const { containerRef, scale } = useCanvasScale(nativeW, nativeH);
+
+  // Drag para reposicionar la imagen de fondo (objectPosition 0-100%).
+  const [dragging, setDragging] = useState(false);
+  const dragState = useRef<{
+    startX: number; startY: number;
+    origX:  number; origY:  number;
+  } | null>(null);
+
+  const canDrag = !!imageUrl && !!onImagePositionChange && !isLoading;
+
+  const onMouseDown = (e: React.MouseEvent) => {
+    if (!canDrag) return;
+    e.preventDefault();
+    const current = imagePosition ?? { x: 50, y: 50 };
+    dragState.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      origX:  current.x,
+      origY:  current.y,
+    };
+    setDragging(true);
+  };
+
+  useEffect(() => {
+    if (!dragging) return;
+    const handleMove = (e: MouseEvent) => {
+      if (!dragState.current || !onImagePositionChange) return;
+      const { startX, startY, origX, origY } = dragState.current;
+      // Sensibilidad: el rango completo de drag se cubre en ~1 ancho/alto del canvas escalado.
+      const dx = ((e.clientX - startX) / (nativeW * scale)) * -100;
+      const dy = ((e.clientY - startY) / (nativeH * scale)) * -100;
+      const nx = Math.max(0, Math.min(100, origX + dx));
+      const ny = Math.max(0, Math.min(100, origY + dy));
+      onImagePositionChange({ x: nx, y: ny });
+    };
+    const handleUp = () => {
+      setDragging(false);
+      dragState.current = null;
+    };
+    window.addEventListener("mousemove", handleMove);
+    window.addEventListener("mouseup", handleUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("mouseup", handleUp);
+    };
+  }, [dragging, nativeW, nativeH, scale, onImagePositionChange]);
 
   return (
     <div className="flex flex-col items-center w-full h-full gap-3 min-h-0">
@@ -56,7 +108,19 @@ export default function CanvasPreview({ format, content, imageUrl, isLoading, im
         {/* Contenedor de escala — mide el espacio disponible */}
         <div ref={containerRef} className="flex-1 w-full flex items-center justify-center min-h-0">
           {/* Wrapper al tamaño escalado (evita overflow) */}
-          <div style={{ width: nativeW * scale, height: nativeH * scale, flexShrink: 0 }}>
+          <div
+            onMouseDown={onMouseDown}
+            style={{
+              width:    nativeW * scale,
+              height:   nativeH * scale,
+              flexShrink: 0,
+              cursor:   canDrag ? (dragging ? "grabbing" : "grab") : "default",
+              userSelect: dragging ? "none" : undefined,
+              // Redondeo visual solo en preview — el canvas nativo (para export) no tiene borderRadius.
+              borderRadius: 16,
+              overflow: "hidden",
+            }}
+          >
             {/* Canvas nativo — se escala con transform */}
             <div
               style={{
@@ -64,15 +128,83 @@ export default function CanvasPreview({ format, content, imageUrl, isLoading, im
                 height: nativeH,
                 transformOrigin: "top left",
                 transform: `scale(${scale})`,
+                pointerEvents: "none", // deja pasar los eventos al wrapper padre para el drag
               }}
             >
-              {format === "story"      && <StoryCanvas      content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} />}
-              {format === "square"     && <SquareCanvas     content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} />}
-              {format === "horizontal" && <HorizontalCanvas content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} />}
-              {format === "poster"     && <PosterCanvas     content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} />}
+              {format === "story"      && <StoryCanvas      content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} logoAlign={logoAlign} cardStyle={cardStyle} imagePosition={imagePosition} imageZoom={imageZoom} />}
+              {format === "square"     && <SquareCanvas     content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} logoAlign={logoAlign} cardStyle={cardStyle} imagePosition={imagePosition} imageZoom={imageZoom} />}
+              {format === "horizontal" && <HorizontalCanvas content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} logoAlign={logoAlign} cardStyle={cardStyle} imagePosition={imagePosition} imageZoom={imageZoom} />}
+              {format === "poster"     && <PosterCanvas     content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} logoAlign={logoAlign} cardStyle={cardStyle} imagePosition={imagePosition} imageZoom={imageZoom} />}
             </div>
           </div>
         </div>
+
+        {/* Controles de imagen: drag hint + zoom */}
+        {canDrag && (
+          <div className="flex items-center gap-3 shrink-0">
+            {/* Hint drag */}
+            <div className="text-legal font-open-sans text-white/30 flex items-center gap-1.5">
+              <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
+                <path d="M8 2v12M2 8h12M5 5l6 6M11 5l-6 6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+              </svg>
+              Arrastra para reencuadrar
+            </div>
+
+            {/* Separador */}
+            <div className="w-px h-3 bg-white/10" />
+
+            {/* Zoom controls */}
+            {onImageZoomChange && (
+              <div className="flex items-center gap-1">
+                {/* Zoom out */}
+                <button
+                  onClick={() => onImageZoomChange(Math.max(0.5, (imageZoom ?? 1) - 0.1))}
+                  title="Alejar"
+                  className="w-6 h-6 flex items-center justify-center rounded text-white/35 hover:text-white/70 hover:bg-white/8 transition-colors cursor-pointer"
+                >
+                  <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
+                    <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.4" />
+                    <path d="M5 7h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                    <path d="M11 11l3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                  </svg>
+                </button>
+
+                {/* Zoom level indicator */}
+                <span className="text-white/25 font-open-sans w-8 text-center" style={{ fontSize: 9 }}>
+                  {Math.round((imageZoom ?? 1) * 100)}%
+                </span>
+
+                {/* Zoom in */}
+                <button
+                  onClick={() => onImageZoomChange(Math.min(2.5, (imageZoom ?? 1) + 0.1))}
+                  title="Acercar"
+                  className="w-6 h-6 flex items-center justify-center rounded text-white/35 hover:text-white/70 hover:bg-white/8 transition-colors cursor-pointer"
+                >
+                  <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
+                    <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.4" />
+                    <path d="M5 7h4M7 5v4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                    <path d="M11 11l3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                  </svg>
+                </button>
+
+                {/* Reset / center */}
+                <button
+                  onClick={() => {
+                    onImageZoomChange(1);
+                    if (onImagePositionChange) onImagePositionChange({ x: 50, y: 50 });
+                  }}
+                  title="Centrar y restablecer zoom"
+                  className="w-6 h-6 flex items-center justify-center rounded text-white/35 hover:text-white/70 hover:bg-white/8 transition-colors cursor-pointer ml-0.5"
+                >
+                  <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
+                    <circle cx="8" cy="8" r="2.5" stroke="currentColor" strokeWidth="1.4" />
+                    <path d="M8 2v2M8 12v2M2 8h2M12 8h2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+                  </svg>
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Historial de imágenes */}
         {imageHistory && imageHistory.length > 0 && onSelectHistoryImage && (
@@ -106,6 +238,10 @@ export interface CanvasProps {
   imageUrl: string | null;
   isLoading: boolean;
   showBadge?: boolean;
+  logoAlign?: LogoAlign;
+  cardStyle?: CardStyle;
+  imagePosition?: { x: number; y: number };
+  imageZoom?: number;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -113,18 +249,18 @@ export interface CanvasProps {
 // Se mantienen como exports nombrados para compatibilidad con page.tsx y
 // FormatToolbar. Agregar un nuevo layout = definir otro LayoutConfig.
 // ─────────────────────────────────────────────────────────────────────────────
-export function StoryCanvas({ content, imageUrl, isLoading, showBadge }: CanvasProps) {
-  return <LayoutRenderer format="story" tokens={DEFAULT_LAYOUT.tokens.story} content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} />;
+export function StoryCanvas({ content, imageUrl, isLoading, showBadge, logoAlign, cardStyle, imagePosition, imageZoom }: CanvasProps) {
+  return <LayoutRenderer format="story" tokens={DEFAULT_LAYOUT.tokens.story} content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} logoAlign={logoAlign} cardStyle={cardStyle} imagePosition={imagePosition} imageZoom={imageZoom} />;
 }
 
-export function SquareCanvas({ content, imageUrl, isLoading, showBadge }: CanvasProps) {
-  return <LayoutRenderer format="square" tokens={DEFAULT_LAYOUT.tokens.square} content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} />;
+export function SquareCanvas({ content, imageUrl, isLoading, showBadge, logoAlign, cardStyle, imagePosition, imageZoom }: CanvasProps) {
+  return <LayoutRenderer format="square" tokens={DEFAULT_LAYOUT.tokens.square} content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} logoAlign={logoAlign} cardStyle={cardStyle} imagePosition={imagePosition} imageZoom={imageZoom} />;
 }
 
-export function HorizontalCanvas({ content, imageUrl, isLoading, showBadge }: CanvasProps) {
-  return <LayoutRenderer format="horizontal" tokens={DEFAULT_LAYOUT.tokens.horizontal} content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} />;
+export function HorizontalCanvas({ content, imageUrl, isLoading, showBadge, logoAlign, cardStyle, imagePosition, imageZoom }: CanvasProps) {
+  return <LayoutRenderer format="horizontal" tokens={DEFAULT_LAYOUT.tokens.horizontal} content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} logoAlign={logoAlign} cardStyle={cardStyle} imagePosition={imagePosition} imageZoom={imageZoom} />;
 }
 
-export function PosterCanvas({ content, imageUrl, isLoading, showBadge }: CanvasProps) {
-  return <LayoutRenderer format="poster" tokens={DEFAULT_LAYOUT.tokens.poster} content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} />;
+export function PosterCanvas({ content, imageUrl, isLoading, showBadge, logoAlign, cardStyle, imagePosition, imageZoom }: CanvasProps) {
+  return <LayoutRenderer format="poster" tokens={DEFAULT_LAYOUT.tokens.poster} content={content} imageUrl={imageUrl} isLoading={isLoading} showBadge={showBadge} logoAlign={logoAlign} cardStyle={cardStyle} imagePosition={imagePosition} imageZoom={imageZoom} />;
 }

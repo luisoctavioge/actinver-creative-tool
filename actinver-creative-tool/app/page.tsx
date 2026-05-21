@@ -14,11 +14,13 @@ import { BriefSection, PieceSection } from "@/components/Editor/EditorPanel";
 import CanvasPreview, { StoryCanvas, SquareCanvas, HorizontalCanvas, PosterCanvas } from "@/components/Canvas/CanvasPreview";
 import { downloadAllFormats } from "@/lib/export";
 import CaptionPanel from "@/components/CaptionPanel/CaptionPanel";
+import SplashScreen from "@/components/SplashScreen";
 import { ChannelCaption } from "@/lib/templates";
 
 export type GenerationStatus = "idle" | "loading" | "success" | "error";
 
 export default function Home() {
+  const [splashDone, setSplashDone] = useState(false);
   const [format, setFormat] = useState<FormatKey>(DEFAULT_FORMAT);
 
   // Panel abierto: solo uno puede estar abierto al mismo tiempo
@@ -49,6 +51,16 @@ export default function Home() {
   const [imageHistory, setImageHistory] = useState<string[]>([]);
   // IDs de Pexels ya usados — evita repetir fotos en la misma sesión
   const [seenPexelsIds, setSeenPexelsIds] = useState<string[]>([]);
+  // Descripciones de imágenes AI ya generadas — el prompt las evita en la siguiente
+  const [seenAIDescriptions, setSeenAIDescriptions] = useState<string[]>([]);
+  // Último proveedor usado — alimenta el botón "otra imagen"
+  const [lastImageProvider, setLastImageProvider] = useState<"pexels" | "ai" | null>(null);
+  // Posición manual del fondo (objectPosition en %). Se reinicia a 50/50 cuando llega una imagen nueva.
+  const [imagePosition, setImagePosition] = useState<{ x: number; y: number }>({ x: 50, y: 50 });
+  // Zoom del fondo (1 = normal). Se reinicia a 1 cuando llega una imagen nueva.
+  const [imageZoom, setImageZoom] = useState<number>(1);
+  // Contador de imágenes AI generadas — se usa como compositionIndex para rotar ángulos.
+  const [aiImageCount, setAiImageCount] = useState<number>(0);
 
   // Estados independientes para texto e imagen
   const [contentStatus, setContentStatus] = useState<GenerationStatus>("idle");
@@ -72,6 +84,7 @@ export default function Home() {
     setImageStatus("loading");
     setImageError(null);
     setGeneratedImageUrl(null);
+    setLastImageProvider(provider);
 
     try {
       const res = await fetch("/api/generate-image", {
@@ -79,9 +92,12 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           product: creatorInput.product,
+          message: creatorInput.message,
           content,
           provider,
           excludeIds: provider === "pexels" ? seenPexelsIds : undefined,
+          excludeDescriptions: provider === "ai" ? seenAIDescriptions : undefined,
+          compositionIndex: provider === "ai" ? aiImageCount : undefined,
         }),
       });
 
@@ -89,16 +105,22 @@ export default function Home() {
       if (!res.ok) throw new Error(data.error ?? "Error al generar la imagen.");
 
       setGeneratedImageUrl(data.imageUrl);
+      setImagePosition({ x: 50, y: 50 });
+      setImageZoom(1);
       setImageHistory((prev) => [data.imageUrl, ...prev].slice(0, 5));
       if (data.pexelsId) {
         setSeenPexelsIds((prev) => [...prev, data.pexelsId]);
       }
+      if (data.aiSceneDescription) {
+        setSeenAIDescriptions((prev) => [...prev, data.aiSceneDescription].slice(-5));
+      }
+      if (provider === "ai") setAiImageCount((prev) => prev + 1);
       setImageStatus("success");
     } catch (err: unknown) {
       setImageError(err instanceof Error ? err.message : "Error desconocido.");
       setImageStatus("error");
     }
-  }, [content, creatorInput.product, seenPexelsIds]);
+  }, [content, creatorInput.product, creatorInput.message, seenPexelsIds, seenAIDescriptions]);
 
   // ── Crear pieza completa (texto + imagen + variantes en paralelo) ──────────
   const handleCreateFull = useCallback(async () => {
@@ -109,6 +131,9 @@ export default function Home() {
     setContentError(null);
     setGeneratedImageUrl(null);
     setImageStatus("idle");
+    setLastImageProvider(null);
+    // Abrir el panel de Contenido para que el usuario vea los resultados (incluidas las variantes)
+    setOpenPanel("content");
     // Limpiar variantes anteriores e iniciar carga
     setVariants([]);
     setVariantsStatus("loading");
@@ -145,6 +170,7 @@ export default function Home() {
     if (!generatedContent) return;
     setImageStatus("loading");
     setImageError(null);
+    setLastImageProvider("pexels");
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const parallelTasks: Promise<any>[] = [
@@ -154,6 +180,7 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           product: creatorInput.product,
+          message: creatorInput.message,
           content: generatedContent,
           provider: "pexels",
           excludeIds: seenPexelsIds,
@@ -186,6 +213,8 @@ export default function Home() {
     if (imageResult.status === "fulfilled" && imageResult.value.ok) {
       const d = imageResult.value;
       setGeneratedImageUrl(d.imageUrl);
+      setImagePosition({ x: 50, y: 50 });
+      setImageZoom(1);
       setImageHistory((prev) => [d.imageUrl, ...prev].slice(0, 5));
       if (d.pexelsId) setSeenPexelsIds((prev) => [...prev, d.pexelsId]);
       setImageStatus("success");
@@ -233,10 +262,9 @@ export default function Home() {
 
   const handleSelectVariant = useCallback((variant: PieceContent) => {
     setContent(variant);
-    setVariants([]);
-    setVariantsStatus("idle");
-    setGeneratedImageUrl(null);
-    setImageStatus("idle");
+    // La imagen de fondo NO se descarta al cambiar variante — sólo cambia
+    // explícitamente cuando el usuario pide "otra imagen" o regenera.
+    // Los captions sí se limpian porque referencian el copy anterior.
     setCaptions([]);
     setCaptionsStatus("idle");
     setBottomPanelOpen(false);
@@ -286,6 +314,13 @@ export default function Home() {
   const globalStatus = imageStatus !== "idle" ? imageStatus : contentStatus;
 
   return (
+    <>
+      {!splashDone && (
+        <SplashScreen
+          onDone={() => setSplashDone(true)}
+          onOpenBrandbook={() => setBrandbookOpen(true)}
+        />
+      )}
     <div className="flex flex-col h-screen bg-azul-grandeza overflow-hidden">
       {/* ── Top bar ─────────────────────────────────────────────── */}
       <header className="flex items-center justify-between px-6 py-3 border-b border-white/10 bg-azul-grandeza/95 backdrop-blur-sm shrink-0">
@@ -293,10 +328,6 @@ export default function Home() {
           <span className="font-poppins font-light text-white text-xl tracking-tight">
             Actinver
           </span>
-          <span
-            className="rounded-full"
-            style={{ width: "5px", height: "5px", backgroundColor: "#E6C78A", position: "relative", top: "-6px" }}
-          />
           <span className="ml-2 text-white/20 font-open-sans text-legal">|</span>
           <span className="ml-2 text-white/40 font-open-sans text-legal uppercase tracking-widest">
             Creative Tool
@@ -366,9 +397,6 @@ export default function Home() {
                 onCreateFull={handleCreateFull}
                 status={contentStatus}
                 error={contentError}
-                variants={variants}
-                variantsStatus={variantsStatus}
-                onSelectVariant={handleSelectVariant}
               />
             </div>
           </div>
@@ -383,8 +411,16 @@ export default function Home() {
             isLoading={imageStatus === "loading"}
             imageHistory={imageHistory}
             showBadge={creatorInput.conBadge}
+            logoAlign={creatorInput.logoAlign}
+            cardStyle={creatorInput.cardStyle}
+            imagePosition={imagePosition}
+            onImagePositionChange={setImagePosition}
+            imageZoom={imageZoom}
+            onImageZoomChange={setImageZoom}
             onSelectHistoryImage={(url) => {
               setGeneratedImageUrl(url);
+              setImagePosition({ x: 50, y: 50 });
+              setImageZoom(1);
               setImageStatus("success");
             }}
           />
@@ -405,6 +441,11 @@ export default function Home() {
                 imageStatus={imageStatus}
                 imageError={imageError}
                 contentReady={contentStatus === "success"}
+                variants={variants}
+                variantsStatus={variantsStatus}
+                onSelectVariant={handleSelectVariant}
+                lastImageProvider={lastImageProvider}
+                imageUrl={generatedImageUrl}
               />
             </div>
           </div>
@@ -432,10 +473,10 @@ export default function Home() {
       {/* ── Capa de exportación — movida al viewport durante la captura por lib/export.ts ── */}
       {/* Los refs apuntan al contenedor directo del canvas nativo (sin transform:scale). */}
       <div aria-hidden style={{ position: "fixed", left: -9999, top: 0, pointerEvents: "none", zIndex: -1 }}>
-        <div ref={exportRefs.story}      style={{ display: "inline-block" }}><StoryCanvas      content={content} imageUrl={generatedImageUrl} isLoading={false} showBadge={creatorInput.conBadge} /></div>
-        <div ref={exportRefs.square}     style={{ display: "inline-block" }}><SquareCanvas     content={content} imageUrl={generatedImageUrl} isLoading={false} showBadge={creatorInput.conBadge} /></div>
-        <div ref={exportRefs.horizontal} style={{ display: "inline-block" }}><HorizontalCanvas content={content} imageUrl={generatedImageUrl} isLoading={false} showBadge={creatorInput.conBadge} /></div>
-        <div ref={exportRefs.poster}     style={{ display: "inline-block" }}><PosterCanvas     content={content} imageUrl={generatedImageUrl} isLoading={false} showBadge={creatorInput.conBadge} /></div>
+        <div ref={exportRefs.story}      style={{ display: "inline-block" }}><StoryCanvas      content={content} imageUrl={generatedImageUrl} isLoading={false} showBadge={creatorInput.conBadge} logoAlign={creatorInput.logoAlign} cardStyle={creatorInput.cardStyle} imagePosition={imagePosition} imageZoom={imageZoom} /></div>
+        <div ref={exportRefs.square}     style={{ display: "inline-block" }}><SquareCanvas     content={content} imageUrl={generatedImageUrl} isLoading={false} showBadge={creatorInput.conBadge} logoAlign={creatorInput.logoAlign} cardStyle={creatorInput.cardStyle} imagePosition={imagePosition} imageZoom={imageZoom} /></div>
+        <div ref={exportRefs.horizontal} style={{ display: "inline-block" }}><HorizontalCanvas content={content} imageUrl={generatedImageUrl} isLoading={false} showBadge={creatorInput.conBadge} logoAlign={creatorInput.logoAlign} cardStyle={creatorInput.cardStyle} imagePosition={imagePosition} imageZoom={imageZoom} /></div>
+        <div ref={exportRefs.poster}     style={{ display: "inline-block" }}><PosterCanvas     content={content} imageUrl={generatedImageUrl} isLoading={false} showBadge={creatorInput.conBadge} logoAlign={creatorInput.logoAlign} cardStyle={creatorInput.cardStyle} imagePosition={imagePosition} imageZoom={imageZoom} /></div>
       </div>
 
       {/* ── Overlay fullscreen del brandbook ──────────────────────── */}
@@ -468,7 +509,7 @@ export default function Home() {
       {/* ── Status bar ──────────────────────────────────────────── */}
       <footer className="flex items-center justify-between px-6 py-2 border-t border-white/5 shrink-0">
         <span className="text-legal text-white/20 font-open-sans">
-          Actinver Creative Tool · Fase 2
+          Actinver Creative Tool
         </span>
         <span className="text-legal font-open-sans">
           {globalStatus === "loading" && (
@@ -483,10 +524,11 @@ export default function Home() {
             <span className="text-sunset/70">Contenido listo — genera el fondo</span>
           )}
           {globalStatus === "error" && <span className="text-red-400/70">Error al generar</span>}
-          {globalStatus === "idle" && <span className="text-white/20">DINN 2025</span>}
+          {globalStatus === "idle" && <span className="text-white/20">&nbsp;</span>}
         </span>
       </footer>
     </div>
+    </>
   );
 }
 

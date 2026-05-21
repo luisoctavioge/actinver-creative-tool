@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { CreatorInput, PieceContent, CHAR_LIMITS, CREATOR_LIMITS, SOCIAL_CHANNELS, SocialChannel, Genero, EdadRango, TipoPieza } from "@/lib/templates";
+import { CreatorInput, PieceContent, CHAR_LIMITS, CREATOR_LIMITS, SOCIAL_CHANNELS, SocialChannel, Genero, EdadRango, TipoPieza, LogoAlign, CardStyle } from "@/lib/templates";
 import { GenerationStatus } from "@/app/page";
 
 // ── Tipo de ficha de producto (mirror de lib/fichas/index.ts) ─────────────────
@@ -394,6 +394,155 @@ function ChannelSelector({
   );
 }
 
+// ── Selector de alineación del logo ──────────────────────────────────────────
+// Tres chips: izquierda / centro (solo sin badge) / derecha.
+function LogoAlignPicker({
+  value,
+  disabled,
+  conBadge,
+  onChange,
+}: {
+  value: LogoAlign;
+  disabled: boolean;
+  conBadge: boolean;
+  onChange: (v: LogoAlign) => void;
+}) {
+  const options: { key: LogoAlign; label: string }[] = [
+    { key: "left",   label: "Izq." },
+    { key: "center", label: "Centro" },
+    { key: "right",  label: "Der." },
+  ];
+  return (
+    <div className="flex flex-col gap-1.5 pt-1">
+      <label className="text-legal uppercase tracking-widest text-white/50 font-open-sans font-medium">
+        Alineación del logo
+      </label>
+      <div className="flex gap-1.5">
+        {options.map(({ key, label }) => {
+          const isActive = value === key;
+          // Centro solo disponible sin badge
+          const isCenterLocked = key === "center" && conBadge;
+          const isDisabled = disabled || isCenterLocked;
+          return (
+            <button
+              key={key}
+              type="button"
+              onClick={() => { if (!isDisabled) onChange(key); }}
+              disabled={isDisabled}
+              title={isCenterLocked ? "Desactiva el Badge Fundador para centrar el logo" : label}
+              className={`
+                flex-1 inline-flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-lg text-legal font-open-sans border transition-all duration-150
+                ${isDisabled ? "opacity-35 cursor-not-allowed" : "cursor-pointer active:scale-[0.96]"}
+                ${isActive && !isCenterLocked
+                  ? "bg-sunset/15 border-sunset/50 text-sunset"
+                  : "bg-transparent border-white/10 text-white/40 hover:border-white/20 hover:text-white/60"
+                }
+              `}
+            >
+              <LogoAlignGlyph align={key} active={isActive && !isCenterLocked} />
+              {label}
+            </button>
+          );
+        })}
+      </div>
+      {conBadge && (
+        <p className="text-white/25 font-open-sans" style={{ fontSize: 10 }}>
+          Centro disponible sin Badge Fundador
+        </p>
+      )}
+    </div>
+  );
+}
+
+function LogoAlignGlyph({ align, active }: { align: LogoAlign; active: boolean }) {
+  // Mini-preview del header con logo en la posición indicada.
+  const color = active ? "currentColor" : "rgba(255,255,255,0.5)";
+  if (align === "center") {
+    // Logo centrado, sin badge
+    return (
+      <svg width="18" height="8" viewBox="0 0 18 8" fill="none" aria-hidden>
+        <rect x="6" y="3" width="6" height="2" rx="0.5" fill={color} />
+      </svg>
+    );
+  }
+  const logo = <rect x="1.5" y="3" width="6" height="2" rx="0.5" fill={color} />;
+  const badge = <circle cx="14.5" cy="4" r="1.4" stroke={color} strokeWidth="1" fill="none" />;
+  return (
+    <svg width="18" height="8" viewBox="0 0 18 8" fill="none" aria-hidden>
+      {align === "left" ? (<>{logo}{badge}</>) : (
+        <g transform="translate(18 0) scale(-1 1)">{logo}{badge}</g>
+      )}
+    </svg>
+  );
+}
+
+// ── Selector de estilo del card de texto ─────────────────────────────────────
+// Dos chips con mini-preview del card (sólido oscuro / glass translúcido).
+function CardStylePicker({
+  value,
+  disabled,
+  onChange,
+}: {
+  value: CardStyle;
+  disabled: boolean;
+  onChange: (v: CardStyle) => void;
+}) {
+  const options: { key: CardStyle; label: string }[] = [
+    { key: "solid", label: "Sólido" },
+    { key: "glass", label: "Glass" },
+  ];
+  return (
+    <div className="flex flex-col gap-1.5 pt-1">
+      <label className="text-legal uppercase tracking-widest text-white/50 font-open-sans font-medium">
+        Estilo del card de texto
+      </label>
+      <div className="flex gap-1.5">
+        {options.map(({ key, label }) => {
+          const isActive = value === key;
+          return (
+            <button
+              key={key}
+              type="button"
+              onClick={() => { if (!disabled) onChange(key); }}
+              disabled={disabled}
+              title={label === "Glass" ? "Translúcido estilo Apple — deja ver el fondo" : "Oscuro opaco"}
+              className={`
+                flex-1 inline-flex items-center justify-center gap-2 px-2.5 py-1.5 rounded-lg text-legal font-open-sans border transition-all duration-150
+                ${disabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer active:scale-[0.96]"}
+                ${isActive
+                  ? "bg-sunset/15 border-sunset/50 text-sunset"
+                  : "bg-transparent border-white/10 text-white/40 hover:border-white/20 hover:text-white/60"
+                }
+              `}
+            >
+              <CardStyleGlyph style={key} active={isActive} />
+              {label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function CardStyleGlyph({ style, active }: { style: CardStyle; active: boolean }) {
+  const stroke = active ? "currentColor" : "rgba(255,255,255,0.5)";
+  if (style === "solid") {
+    return (
+      <svg width="18" height="10" viewBox="0 0 18 10" fill="none" aria-hidden>
+        <rect x="1" y="1" width="16" height="8" rx="1.5" fill={stroke} opacity="0.7" stroke={stroke} strokeWidth="1" />
+      </svg>
+    );
+  }
+  // Glass: borde con rayas diagonales sutiles
+  return (
+    <svg width="18" height="10" viewBox="0 0 18 10" fill="none" aria-hidden>
+      <rect x="1" y="1" width="16" height="8" rx="1.5" fill={stroke} opacity="0.15" stroke={stroke} strokeWidth="1" />
+      <path d="M4 9L8 1M9 9L13 1M14 9L17 3" stroke={stroke} strokeWidth="0.5" opacity="0.6" />
+    </svg>
+  );
+}
+
 // ── Sección de Brief ───────────────────────────────────────────────────────────
 // Exportada para usarse directamente en el panel izquierdo de page.tsx
 
@@ -403,21 +552,14 @@ export function BriefSection({
   onCreateFull,
   status,
   error,
-  variants,
-  variantsStatus,
-  onSelectVariant,
 }: {
   creatorInput: CreatorInput;
   onChange: (input: CreatorInput) => void;
   onCreateFull: () => void;
   status: GenerationStatus;
   error: string | null;
-  variants: PieceContent[];
-  variantsStatus: GenerationStatus;
-  onSelectVariant: (variant: PieceContent) => void;
 }) {
   const isLoading = status === "loading";
-  const isVariantsLoading = variantsStatus === "loading";
   const canGenerate = creatorInput.product.trim().length > 0 && !isLoading;
 
   return (
@@ -497,9 +639,29 @@ export function BriefSection({
               label="Badge Fundador"
               checked={creatorInput.conBadge}
               disabled={isLoading}
-              onChange={(v) => onChange({ ...creatorInput, conBadge: v })}
+              onChange={(v) => onChange({
+                ...creatorInput,
+                conBadge: v,
+                // Si se activa el badge y el logo estaba centrado, volver a izquierda
+                logoAlign: v && creatorInput.logoAlign === "center" ? "left" : creatorInput.logoAlign,
+              })}
             />
           </div>
+
+          {/* Alineación del logo */}
+          <LogoAlignPicker
+            value={creatorInput.logoAlign}
+            disabled={isLoading}
+            conBadge={creatorInput.conBadge}
+            onChange={(v) => onChange({ ...creatorInput, logoAlign: v })}
+          />
+
+          {/* Estilo del card de texto */}
+          <CardStylePicker
+            value={creatorInput.cardStyle}
+            disabled={isLoading}
+            onChange={(v) => onChange({ ...creatorInput, cardStyle: v })}
+          />
         </div>
 
         {/* ── Canal ── */}
@@ -533,37 +695,6 @@ export function BriefSection({
         )}
       </div>
 
-      {/* 3 variantes de copy — se muestran automáticamente al crear pieza */}
-      {(isVariantsLoading || variants.length > 0) && (
-        <>
-          <div className="border-t border-white/10" />
-          <div className="flex flex-col gap-2">
-            {/* Encabezado de sección */}
-            <div className="flex items-center gap-2">
-              {isVariantsLoading ? <Spinner /> : <VariantsIcon />}
-              <span className="text-legal font-poppins font-semibold text-white/50 uppercase tracking-widest">
-                {isVariantsLoading ? "Generando variantes..." : "3 variantes de copy"}
-              </span>
-            </div>
-
-            {variants.length > 0 && (
-              <div className="flex flex-col gap-2">
-                {variants.map((v, i) => (
-                  <button
-                    key={i}
-                    onClick={() => onSelectVariant(v)}
-                    className="text-left p-3 rounded-lg border border-white/10 bg-azul-acompanamiento/40 hover:border-sunset/40 hover:bg-azul-acompanamiento/70 transition-all duration-150 group"
-                  >
-                    <p className="text-legal font-poppins font-bold text-white group-hover:text-sunset transition-colors line-clamp-1">{v.title}</p>
-                    <p className="text-legal font-open-sans text-white/40 mt-0.5 line-clamp-2 leading-snug">{v.description}</p>
-                    <p className="text-legal font-open-sans text-sunset/60 mt-1">{v.cta}</p>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        </>
-      )}
     </div>
   );
 }
@@ -580,6 +711,11 @@ export function PieceSection({
   imageStatus,
   imageError,
   contentReady,
+  variants,
+  variantsStatus,
+  onSelectVariant,
+  lastImageProvider,
+  imageUrl,
 }: {
   content: PieceContent;
   onChange: (content: PieceContent) => void;
@@ -589,9 +725,16 @@ export function PieceSection({
   imageStatus: GenerationStatus;
   imageError: string | null;
   contentReady: boolean;
+  variants: PieceContent[];
+  variantsStatus: GenerationStatus;
+  onSelectVariant: (variant: PieceContent) => void;
+  lastImageProvider: "pexels" | "ai" | null;
+  imageUrl: string | null;
 }) {
   const isLoading = imageStatus === "loading";
   const canGenerate = content.title.trim().length > 0 && !isLoading;
+  const isVariantsLoading = variantsStatus === "loading";
+  const canShowReject = !!imageUrl && !isLoading && !!lastImageProvider;
 
   return (
     <div className="flex flex-col gap-4">
@@ -663,6 +806,18 @@ export function PieceSection({
           </button>
         </div>
 
+        {/* Feedback loop — "otra imagen" reemplaza la actual con otra del mismo provider */}
+        {canShowReject && (
+          <button
+            onClick={() => onGenerateImage(lastImageProvider!)}
+            className="w-full py-2 rounded-lg border border-white/10 text-legal font-open-sans text-white/50 hover:border-sunset/40 hover:text-sunset hover:bg-sunset/5 transition-all duration-150 flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.98]"
+            title="No me convence — generar otra distinta"
+          >
+            <RefreshIcon spinning={false} />
+            Otra imagen
+          </button>
+        )}
+
         {imageStatus === "error" && imageError && (
           <p className="text-legal text-red-400 font-open-sans leading-snug bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
             {imageError}
@@ -675,6 +830,61 @@ export function PieceSection({
           <p className="text-legal text-white/25 text-center font-open-sans">Primero genera el contenido con tu brief</p>
         )}
       </div>
+
+      {/* ── 3 variantes de copy ──────────────────────────────────── */}
+      {(isVariantsLoading || variants.length > 0) && (
+        <>
+          <div className="border-t border-white/10 mt-2" />
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              {isVariantsLoading ? <Spinner /> : <VariantsIcon />}
+              <span className="text-legal font-poppins font-semibold text-white/50 uppercase tracking-widest">
+                {isVariantsLoading ? "Generando variantes..." : "3 variantes de copy"}
+              </span>
+            </div>
+            <p className="text-legal font-open-sans text-white/30 leading-snug">
+              Tonos alternos para el mismo brief. Elige una para aplicarla.
+            </p>
+
+            {variants.length > 0 && (
+              <div className="flex flex-col gap-2 mt-1">
+                {variants.map((v, i) => {
+                  const isActive =
+                    v.title === content.title &&
+                    v.description === content.description &&
+                    v.cta === content.cta;
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => onSelectVariant(v)}
+                      className={`text-left p-3 rounded-lg border transition-all duration-150 group ${
+                        isActive
+                          ? "border-sunset/60 bg-sunset/5"
+                          : "border-white/10 bg-azul-acompanamiento/40 hover:border-sunset/40 hover:bg-azul-acompanamiento/70"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <p className={`text-legal font-poppins font-bold transition-colors line-clamp-2 ${isActive ? "text-sunset" : "text-white group-hover:text-sunset"}`}>
+                          {v.title}
+                        </p>
+                        <span className="shrink-0 font-open-sans text-white/25 uppercase tracking-widest" style={{ fontSize: 9 }}>
+                          {i + 1}
+                        </span>
+                      </div>
+                      <p className="text-legal font-open-sans text-white/40 mt-1 line-clamp-3 leading-snug">
+                        {v.description}
+                      </p>
+                      <p className="text-legal font-open-sans text-sunset/60 mt-1.5">
+                        {v.cta || "—"}
+                      </p>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }

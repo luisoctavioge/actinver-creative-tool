@@ -56,8 +56,13 @@ export const DEFAULT_FORMAT: FormatKey = "story";
 export const FORMAT_KEYS: FormatKey[] = ["story", "square", "horizontal", "poster"];
 
 // Dimensiones nativas CSS del canvas (se exportan escaladas a resolución final)
+// Dimensiones nativas: deben ser proporcionales al formato de salida.
+// story 9:16   → 380 × (380 × 16/9) = 380 × 676  → export 1080 × 1921 ≈ 1080×1920 ✓
+// square 1:1   → 540 × 540                         → export 1080 × 1080 ✓
+// horizontal   → 960 × 540 (16:9)                  → export 1920 × 1080 ✓
+// poster 3:4   → 540 × 720                          → export 1080 × 1440 ✓
 export const NATIVE: Record<FormatKey, { w: number; h: number }> = {
-  story:      { w: 380, h: 820 },
+  story:      { w: 380, h: 676 },
   square:     { w: 540, h: 540 },
   horizontal: { w: 960, h: 540 },
   poster:     { w: 540, h: 720 },
@@ -90,6 +95,8 @@ export const CAPTION_LIMITS: Record<SocialChannel, number> = {
 export type Genero    = "hombre" | "mujer" | "ambos";
 export type EdadRango = "25-35" | "36-50" | "51-65";
 export type TipoPieza = "educativa" | "promo" | "institucional";
+export type LogoAlign = "left" | "right" | "center";
+export type CardStyle = "solid" | "glass";
 
 // ── Brief del usuario (inputs del editor) ────────────────────────────────────
 export interface CreatorInput {
@@ -101,6 +108,8 @@ export interface CreatorInput {
   tipoPieza: TipoPieza;      // Tipo de pieza (educativa / promo / institucional)
   conCTA: boolean;           // Incluir llamada a la acción
   conBadge: boolean;         // Mostrar badge "El privilegio de ser Fundador"
+  logoAlign: LogoAlign;      // Alineación del logo (izquierda / derecha)
+  cardStyle: CardStyle;      // Estilo del card de texto (sólido / glass)
 }
 
 export const CREATOR_LIMITS = {
@@ -117,23 +126,28 @@ export const DEFAULT_CREATOR_INPUT: CreatorInput = {
   tipoPieza: "educativa",
   conCTA: true,
   conBadge: true,
+  logoAlign: "left",
+  cardStyle: "solid",
 };
 
 // ── Contenido generado (lo que va en la pieza) ────────────────────────────────
 export interface PieceContent {
-  title: string;       // max 48 chars
-  description: string; // max 180 chars
-  cta: string;         // max 30 chars
+  title: string;        // max 48 chars
+  description: string;  // max 180 chars
+  cta: string;          // max 30 chars
+  highlight?: string;   // max 60 chars — frase de impacto, resaltada en la pieza (especialmente en Promo)
 }
 
 export const CHAR_LIMITS = {
   title:       48,
   description: 180,
   cta:         30,
+  highlight:   60,
 } as const;
 
 export const DEFAULT_CONTENT: PieceContent = {
   title: "",
   description: "",
   cta: "",
+  highlight: "",
 };

@@ -1,0 +1,868 @@
+{
+  "$schema": "creative-tool/product-sheet/v1",
+  "meta": {
+    "product_id": "seguro-auto-actinver-zurich",
+    "version": "1.0.0",
+    "created_at": "2026-04-15",
+    "updated_at": "2026-04-15",
+    "language": "es-MX",
+    "status": "active",
+    "source_documents": [
+      "FichaTecAutoActinverZurich.pdf",
+      "Flyer Seguro Auto Actinver Zurich.pdf",
+      "Infografia Auto.pdf",
+      "Presentación Seguro Auto 2026.pdf",
+      "Condiciones Generales AUTO.pdf"
+    ]
+  },
+
+  "product": {
+    "name": "Tu Auto Seguro Más",
+    "short_name": "Seguro de Auto",
+    "category": "seguros",
+    "subcategory": "seguro-automotriz",
+    "insurer": "Zurich Aseguradora Mexicana S.A. de C.V.",
+    "distributor": "Actinver",
+    "co_branding": ["Actinver", "Zurich"],
+    "description": "Seguro de auto totalmente personalizable con diferentes coberturas que brinda protección integral dentro y fuera del vehículo. Incluye Seguro de Responsabilidad Civil Obligatorio para cumplir con los requisitos de Ley en caminos, vías y puentes federales.",
+    "description_short": "Protección integral para tu auto, personalizable y con cobertura dentro y fuera del vehículo.",
+    "value_proposition": "Más que un seguro, somos la protección que te acompaña.",
+    "conditions_date": "Marzo 2023",
+    "conditions_code": "ZAUT032023.1"
+  },
+
+  "target_audience": {
+    "primary": {
+      "type": "personas_fisicas",
+      "description": "Dueños de automóviles particulares que buscan proteger su patrimonio con un seguro personalizable y respaldo de una aseguradora global.",
+      "demographics": {
+        "age_range": "25-55",
+        "socioeconomic_level": "C+, A/B",
+        "location": "México (cobertura nacional)",
+        "profile": "Profesionistas, familias, personas con auto propio de uso particular"
+      }
+    },
+    "secondary": {
+      "type": "personas_morales",
+      "description": "Empresas con flotas vehiculares de uso comercial.",
+      "fleet_range": "10 a 750 vehículos",
+      "fleet_composition": "80% autos, pick ups y camiones hasta 7.5 ton / 20% otros vehículos (suscripción especial)"
+    },
+    "vehicle_types": [
+      "Autos",
+      "Pick ups",
+      "Camiones hasta 3.5 toneladas"
+    ],
+    "usage_types": [
+      "Uso particular",
+      "Uso comercial"
+    ],
+    "vehicle_origin": [
+      "Residentes (fabricados en México o importados legalmente)",
+      "Fronterizos y Legalizados (antigüedad mínima 5 años)"
+    ]
+  },
+
+  "packages": [
+    {
+      "id": "paquete-amplio",
+      "name": "Paquete Amplio",
+      "description": "Cobertura completa con todas las coberturas base incluidas.",
+      "included_coverages": [
+        "danos-materiales",
+        "robo-total",
+        "rc-danos-terceros-luc",
+        "proteccion-maz",
+        "gastos-medicos-ocupantes-luc",
+        "asistencia-legal",
+        "asistencia-vial",
+        "rc-muerte-terceros",
+        "accidentes-conductor-ocupantes",
+        "rc-civil-extranjero",
+        "multas-corralones"
+      ]
+    },
+    {
+      "id": "paquete-limitado",
+      "name": "Paquete Limitado",
+      "description": "Cobertura intermedia sin daños materiales pero con protección de robo y responsabilidad civil.",
+      "included_coverages": [
+        "robo-total",
+        "rc-danos-terceros-luc",
+        "proteccion-maz",
+        "gastos-medicos-ocupantes-luc",
+        "asistencia-legal",
+        "asistencia-vial",
+        "rc-muerte-terceros",
+        "accidentes-conductor-ocupantes",
+        "rc-civil-extranjero"
+      ]
+    },
+    {
+      "id": "paquete-rc",
+      "name": "Paquete RC",
+      "description": "Cobertura básica de responsabilidad civil para cumplir con la ley.",
+      "included_coverages": [
+        "rc-danos-terceros-luc",
+        "proteccion-maz",
+        "gastos-medicos-ocupantes-luc",
+        "asistencia-legal",
+        "asistencia-vial",
+        "rc-muerte-terceros",
+        "accidentes-conductor-ocupantes",
+        "rc-civil-extranjero"
+      ]
+    }
+  ],
+
+  "coverages": {
+    "base": [
+      {
+        "id": "danos-materiales",
+        "number": 1,
+        "name": "Daños Materiales",
+        "description": "Cubre los daños materiales del vehículo asegurado a consecuencia de colisiones, vuelcos, rotura, desprendimiento, robo de cristales, incendios, fenómenos hidrometeorológicos, huelgas, disturbios, transportación y desbielamiento del motor.",
+        "sum_insured": {
+          "residentes": ["Valor Comercial", "Valor Comercial +10%", "Valor Factura", "Valor Auto Nuevo", "Valor Convenido"],
+          "fronterizos": ["Trade in Value", "Private Party Value"]
+        },
+        "deductible": ["3%", "5%", "10%", "20%"],
+        "deductible_notes": "El 3% es variable de acuerdo a la Entidad Federativa.",
+        "applies_to": ["Autos", "Pick ups", "Camiones hasta 3.5 Toneladas"],
+        "extras": [
+          "Reembolso de deducible cuando el tercero responsable esté presente y cubra los daños.",
+          "Reparación por rotura de cristales: si se opta por reparación (no sustitución) y la inspección técnica lo acredite, se exenta el pago de deducible."
+        ]
+      },
+      {
+        "id": "robo-total",
+        "number": 2,
+        "name": "Robo Total",
+        "description": "Cubre el robo total de la unidad asegurada y los daños materiales que sufra a consecuencia del mismo. Incluye pago de corralón por recuperación hasta $3,000 M.N.",
+        "sum_insured": {
+          "residentes": ["Valor Comercial", "Valor Comercial +10%", "Valor Factura", "Valor Auto Nuevo", "Valor Convenido"],
+          "fronterizos": ["Trade in Value", "Private Party Value"]
+        },
+        "deductible": ["5%", "10%", "20%"],
+        "deductible_notes": "El 5% es variable de acuerdo a la Entidad Federativa.",
+        "applies_to": ["Autos", "Pick ups", "Camiones hasta 3.5 Toneladas"]
+      },
+      {
+        "id": "rc-danos-terceros-luc",
+        "number": 3,
+        "name": "Responsabilidad Civil por Daños a Terceros L.U.C.",
+        "description": "Cubre los daños materiales causados a un tercero en sus bienes y/o lesiones corporales o la muerte a consecuencia del uso del vehículo asegurado. Incluye automáticamente la RC de daños causados por tumba burros, estribos, canastillas de techo, porta bicicleta, tirón o bola de arrastre. Incluye RC Obligatorio para caminos, vías y puentes federales.",
+        "sum_insured": {
+          "autos": "Desde $250,000 hasta $5,500,000 M.N.",
+          "camiones": "Desde $500,000 hasta $5,500,000 M.N.",
+          "increments": "$50,000 M.N."
+        },
+        "deductible": "No aplica",
+        "applies_to": ["Autos", "Pick ups", "Camiones hasta 3.5 Toneladas"]
+      },
+      {
+        "id": "rc-muerte-terceros",
+        "number": 4,
+        "name": "Responsabilidad Civil por Muerte de Terceros",
+        "description": "Cubre la muerte de terceros que cause el vehículo asegurado, incluyendo la indemnización por daño moral. Opera en exceso de la suma asegurada de RC por daños a terceros L.U.C.",
+        "sum_insured": ["$1,000,000 M.N.", "$2,000,000 M.N.", "$3,000,000 M.N."],
+        "deductible": "No aplica",
+        "applies_to": ["Autos", "Pick ups", "Camiones hasta 3.5 Toneladas"]
+      },
+      {
+        "id": "gastos-medicos-ocupantes-luc",
+        "number": 5,
+        "name": "Gastos Médicos Ocupantes (L.U.C.)",
+        "description": "Cubre los Gastos Médicos que, a consecuencia de un accidente de tránsito, un asalto o intento de un asalto, se causen lesiones corporales a cualquier persona ocupante del vehículo asegurado.",
+        "sum_insured": "Desde $250,000 hasta $2,000,000 M.N.",
+        "sum_insured_increments": "$50,000 M.N.",
+        "deductible": "No aplica",
+        "applies_to": ["Autos", "Pick ups", "Camiones hasta 3.5 Toneladas"]
+      },
+      {
+        "id": "proteccion-maz",
+        "number": 6,
+        "name": "Protección MaZ",
+        "description": "Cubre al asegurado aún cuando maneje otro vehículo de características similares. Extiende la protección de: RC por Daños a Terceros L.U.C., RC por Muerte de Terceros, Gastos Médicos Ocupantes, Accidentes al conductor y ocupantes, Asistencia Legal, Asistencia Vial y RC por Daños a Ocupantes.",
+        "sum_insured": "Amparada",
+        "deductible": "No aplica",
+        "applies_to": ["Autos", "Pick ups"],
+        "restriction": "Personas físicas de uso particular"
+      },
+      {
+        "id": "accidentes-conductor-ocupantes",
+        "number": 7,
+        "name": "Accidentes al Conductor y Ocupantes del Vehículo",
+        "description": "Indemnización por muerte o lesión corporal que sufra el conductor y/o los ocupantes del vehículo asegurado como consecuencia de un accidente automovilístico, robo total y/o intento de robo. Se duplica la suma asegurada en caso de fallecimiento dentro de los 90 días posteriores al accidente.",
+        "sum_insured": "Desde $100,000 hasta $300,000 M.N.",
+        "sum_insured_increments": "$50,000 M.N.",
+        "deductible": "No aplica",
+        "applies_to": ["Autos", "Pick ups", "Camiones hasta 3.5 Toneladas"],
+        "differentiator": "Cobertura única en el mercado: cubre también a los ocupantes del vehículo asegurado."
+      }
+    ],
+    "additional": [
+      {
+        "id": "adaptaciones-conversiones",
+        "number": 8,
+        "name": "Adaptaciones y/o Conversiones",
+        "description": "Cubre los daños materiales que sufran las adaptaciones y conversiones instaladas en el vehículo asegurado.",
+        "sum_insured": "Aplica mismo % de daños materiales y robo total. La indica el asegurado.",
+        "sum_insured_increments": "$50,000 M.N.",
+        "deductible": "Aplica mismo % de daños materiales y robo total",
+        "applies_to": ["Autos", "Pick ups", "Camiones hasta 3.5 Toneladas"],
+        "usage": ["Uso particular", "Uso comercial"]
+      },
+      {
+        "id": "apoyo-pago-transporte",
+        "number": 9,
+        "name": "Apoyo para Pago de Transporte",
+        "description": "Cuando una reparación supere los 5 días del vehículo asegurado cubierto por Daños Materiales, se indemniza una suma asegurada por concepto de apoyo para pago de transporte.",
+        "sum_insured": "$3,000 M.N.",
+        "deductible": "No aplica",
+        "applies_to": ["Autos", "Pick ups", "Camiones hasta 3.5 Toneladas"],
+        "restriction": "Personas físicas, uso particular. Un evento por año. Excluyente con Auto Sustituto y Auto Sustituto Pluz."
+      },
+      {
+        "id": "auto-sustituto",
+        "number": 10,
+        "name": "Auto Sustituto",
+        "description": "En caso de pérdida total o robo total del vehículo, el asegurado goza de préstamo de auto o reembolso por renta de auto/taxi/transporte particular.",
+        "sum_insured": "$13,000 M.N. equivalente a 15 días y hasta $25,000 M.N. equivalente a 20 días",
+        "deductible": "No aplica",
+        "applies_to": ["Autos", "Pick ups"],
+        "restriction": "Un evento por año. Personas físicas, uso particular."
+      },
+      {
+        "id": "auto-sustituto-pluz",
+        "number": 11,
+        "name": "Auto Sustituto Pluz",
+        "description": "En caso de pérdida parcial o total por Daños Materiales o Robo Total, el asegurado goza de reembolso por renta de auto/taxi/transporte o préstamo de auto.",
+        "sum_insured": "$13,000 M.N. equivalente a 15 días y hasta $25,000 M.N. equivalente a 20 días",
+        "deductible": "No aplica",
+        "applies_to": ["Autos", "Pick ups"],
+        "restriction": "Un evento por año. Personas físicas, uso particular."
+      },
+      {
+        "id": "equipo-especial",
+        "number": 12,
+        "name": "Equipo Especial",
+        "description": "Ampara los daños materiales, el robo o pérdida del equipo especial instalado en el vehículo asegurado.",
+        "sum_insured": "Desde $1,000 hasta el 25% del valor de la unidad",
+        "deductible": "25% sobre el monto de la suma asegurada",
+        "applies_to": ["Autos", "Pick ups", "Camiones hasta 3.5 Toneladas"]
+      },
+      {
+        "id": "extravio-llaves",
+        "number": 13,
+        "name": "Extravío de Llaves",
+        "description": "Cubre el costo de reposición de la llave del auto en caso de pérdida o extravío.",
+        "sum_insured": ["$2,500 M.N.", "$5,000 M.N.", "$10,000 M.N."],
+        "deductible": "No aplica",
+        "applies_to": ["Autos", "Pick ups", "Camiones hasta 3.5 Toneladas"],
+        "restriction": "Un evento por año. Uso particular. Opera vía reembolso."
+      },
+      {
+        "id": "gastos-medicos-ilimitados-menores",
+        "number": 14,
+        "name": "Gastos Médicos Ilimitados para Menores de 12 años",
+        "description": "Si un menor de 12 años resulta lesionado en un accidente automovilístico, cubrimos tratamiento médico, intervención quirúrgica con hospitalización y uso de ambulancia, dentro de los 90 días posteriores a la fecha del siniestro.",
+        "sum_insured": "Opera en exceso de la suma asegurada de Gastos Médicos Ocupantes (L.U.C.)",
+        "deductible": "No aplica",
+        "applies_to": ["Autos"],
+        "restriction": "Personas físicas, uso particular. Opera vía reembolso."
+      },
+      {
+        "id": "llantas-rines",
+        "number": 15,
+        "name": "Llantas y Rines",
+        "description": "Cubre los daños materiales que sufran las llantas y/o rines del vehículo a consecuencia de un daño accidental que inhabilite su funcionamiento, mientras el vehículo se encuentre circulando.",
+        "sum_insured": "$10,000 M.N. hasta $50,000 M.N.",
+        "deductible": "25% sobre el monto de la pérdida",
+        "applies_to": ["Autos", "Pick ups"],
+        "restriction": "Personas físicas, uso particular."
+      },
+      {
+        "id": "multas-corralones",
+        "number": 16,
+        "name": "Multas y Corralones",
+        "description": "Cubre las multas o infracciones administrativas impuestas por autoridades por falta de precaución relacionadas con el accidente de tránsito, costo de la pensión o corralón desde su retención y hasta su liberación.",
+        "sum_insured": "Hasta un máximo equivalente a 45 UMA por evento como L.U.C.",
+        "deductible": "No aplica",
+        "applies_to": ["Autos", "Pick ups", "Camiones hasta 3.5 Toneladas"],
+        "restriction": "Personas físicas y morales, uso particular. Opera vía reembolso."
+      },
+      {
+        "id": "perdida-total",
+        "number": 17,
+        "name": "Pérdida Total",
+        "description": "Cubre solo la pérdida total del vehículo asegurado a consecuencia de los riesgos amparados en la cobertura de daños materiales.",
+        "sum_insured": "Amparada",
+        "deductible": "5% deducible básico. 5%, 10% y 20%. 3% solo en algunos estados y autos residentes.",
+        "applies_to": ["Autos", "Pick ups", "Camiones hasta 3.5 Toneladas"]
+      },
+      {
+        "id": "perdida-objetos-personales",
+        "number": 18,
+        "name": "Pérdida de Objetos Personales",
+        "description": "En caso de robo total del vehículo, cubre la pérdida de objetos personales: bolso, equipaje, teléfonos celulares, laptop, reproductores de audio y video, cámaras, instrumentos musicales, reloj, bicicletas, lentes de sol y robo de la última compra.",
+        "sum_insured": ["$5,000 M.N.", "$10,000 M.N.", "$20,000 M.N."],
+        "deductible": "10% sobre la suma asegurada",
+        "applies_to": ["Autos", "Pick ups"],
+        "restriction": "Personas físicas, uso particular."
+      },
+      {
+        "id": "reparacion-agencia",
+        "number": 19,
+        "name": "Reparación en Agencia",
+        "description": "Si el asegurado cuenta con la cobertura de daños materiales o daños por robo total, nos encargamos de realizar la reparación correspondiente en agencia.",
+        "sum_insured": "Amparada",
+        "deductible": "No aplica",
+        "applies_to": ["Autos", "Pick ups", "Camiones hasta 3.5 Toneladas"],
+        "restriction": "Aplica para vehículos de entre 2 y 6 años de antigüedad. Excepto chasis."
+      },
+      {
+        "id": "rc-adaptaciones-conversiones",
+        "number": 20,
+        "name": "Responsabilidad Civil Adaptaciones y/o Conversiones",
+        "description": "Cubre los daños causados por medio de las adaptaciones y/o conversiones del vehículo asegurado, siempre y cuando se encuentren instaladas al momento del siniestro y el vehículo no presente un aumento de dimensión.",
+        "sum_insured": {
+          "autos": "Desde $250,000 hasta $5,500,000 M.N.",
+          "camiones": "Desde $500,000 hasta $5,500,000 M.N.",
+          "increments": "$50,000 M.N."
+        },
+        "deductible": "Mismo porcentaje elegido para RC por Daños a Terceros L.U.C.",
+        "applies_to": ["Autos", "Pick ups", "Camiones hasta 3.5 Toneladas"],
+        "restriction": "Uso comercial."
+      },
+      {
+        "id": "responsabilidad-cruzada",
+        "number": 21,
+        "name": "Responsabilidad Cruzada",
+        "description": "Cubre los daños que el asegurado ocasione a sus bienes con el vehículo de su propiedad amparado en la póliza, aún cuando dichos daños se hayan ocasionado dentro o fuera de predios.",
+        "sum_insured": {
+          "autos": "Desde $250,000 hasta $5,500,000 M.N.",
+          "camiones": "Desde $500,000 hasta $5,500,000 M.N.",
+          "increments": "$50,000 M.N."
+        },
+        "deductible": "No aplica",
+        "applies_to": ["Autos", "Pick ups", "Camiones hasta 3.5 Toneladas"],
+        "usage": ["Uso particular", "Uso comercial"]
+      },
+      {
+        "id": "rc-familiar",
+        "number": 22,
+        "name": "Responsabilidad Civil Familiar",
+        "description": "Cubre al asegurado y contratante de la póliza por daños, perjuicios y daño moral que cause a terceras personas en su integridad física y sus inmuebles, cuando sea propietario o arrendatario de un inmueble destinado a habitación.",
+        "sum_insured": "$250,000 M.N.",
+        "deductible": "No aplica",
+        "applies_to": ["Autos", "Pick ups", "Camiones hasta 3.5 Toneladas"],
+        "restriction": "Persona física, uso particular."
+      },
+      {
+        "id": "rc-arrastre-remolque",
+        "number": 23,
+        "name": "Responsabilidad Civil por Arrastre de Remolque",
+        "description": "Cubre los daños a terceros que se ocasionen a consecuencia del arrastre de un remolque enganchado al vehículo asegurado, arrastrado mediante los mecanismos y dispositivos especializados.",
+        "sum_insured": {
+          "autos": "Desde $250,000 hasta $5,500,000 M.N.",
+          "camiones": "Desde $500,000 hasta $5,500,000 M.N.",
+          "increments": "$50,000 M.N."
+        },
+        "deductible": "No aplica",
+        "applies_to": ["Autos", "Pick ups", "Camiones hasta 3.5 Toneladas"]
+      },
+      {
+        "id": "rc-contaminacion",
+        "number": 24,
+        "name": "Responsabilidad Civil por Contaminación",
+        "description": "Ampara la responsabilidad civil por los daños súbitos e imprevistos causados al medio ambiente por la volcadura y/o colisión de la carga que transporte el vehículo asegurado, dentro de la República Mexicana.",
+        "sum_insured": {
+          "autos": "Desde $250,000 hasta $5,500,000 M.N.",
+          "camiones": "Desde $500,000 hasta $5,500,000 M.N.",
+          "increments": "$50,000 M.N."
+        },
+        "deductible": "No aplica",
+        "applies_to": ["Pick ups", "Camiones hasta 3.5 Toneladas", "Equipo pesado"],
+        "restriction": "Uso comercial. Suscripción especial según tipo de carga."
+      },
+      {
+        "id": "rc-danos-ocupantes",
+        "number": 25,
+        "name": "Responsabilidad Civil por Daños a Ocupantes",
+        "description": "Cubre la responsabilidad civil legal en que incurra el conductor del vehículo asegurado cuando, a consecuencia de su uso, cause lesiones corporales o la muerte de los ocupantes del vehículo, incluyendo la indemnización por daño moral.",
+        "sum_insured": "Desde $250,000 hasta $2,000,000 M.N.",
+        "sum_insured_increments": "$50,000 M.N.",
+        "deductible": "Caso a caso. Zurich responderá sin condicionar al pago previo del deducible.",
+        "applies_to": ["Autos"],
+        "restriction": "Personas físicas de uso particular."
+      },
+      {
+        "id": "rc-danos-carga",
+        "number": 26,
+        "name": "Responsabilidad Civil por Daños Ocasionados por la Carga",
+        "description": "Ampara la responsabilidad civil en que incurra el asegurado a consecuencia del uso del vehículo y cause daños materiales a terceros en sus bienes y/o lesiones corporales o la muerte a terceros con la carga que el vehículo asegurado transporta.",
+        "sum_insured": {
+          "autos": "Desde $250,000 hasta $5,500,000 M.N.",
+          "camiones": "Desde $500,000 hasta $5,500,000 M.N.",
+          "increments": "$50,000 M.N."
+        },
+        "deductible": "No aplica",
+        "applies_to": ["Pick ups", "Camiones hasta 3.5 Toneladas", "Equipo pesado"],
+        "restriction": "Uso comercial."
+      },
+      {
+        "id": "rc-viajero",
+        "number": 27,
+        "name": "Responsabilidad Civil Viajero",
+        "description": "Cubre la Responsabilidad Civil de los pasajeros a consecuencia de un accidente de tránsito por: muerte, incapacidad permanente, gastos funerarios, gastos médicos, pérdida o daño al equipaje.",
+        "sum_insured": "5,000 UMA",
+        "deductible": "Será el porcentaje de deducible elegido para RC por Daños a Terceros L.U.C.",
+        "applies_to": ["Autos"],
+        "restriction": "Exclusivo para uso turismo servicio público."
+      },
+      {
+        "id": "robo-parcial",
+        "number": 28,
+        "name": "Robo Parcial",
+        "description": "Cubre el robo de las partes y accesorios originales instalados por el fabricante, que se encuentre en el interior o exterior del vehículo asegurado, siempre y cuando la pérdida no sea a consecuencia de robo total y existan muestras de violencia.",
+        "sum_insured": ["$25,000 M.N.", "$35,000 M.N."],
+        "deductible": "10% de la suma asegurada y no del valor de la pérdida",
+        "applies_to": ["Autos", "Pick ups", "Camiones hasta 3.5 Toneladas"],
+        "restriction": "Uso particular."
+      },
+      {
+        "id": "zero",
+        "number": 29,
+        "name": "Zero",
+        "description": "Exenta del deducible en caso de pérdida total por daños materiales.",
+        "sum_insured": "No aplica",
+        "deductible": "No aplica",
+        "applies_to": ["Autos", "Pick ups", "Camiones hasta 3.5 Toneladas"],
+        "restriction": "Un evento por año. Excluyente con coberturas 30, 31 y 32."
+      },
+      {
+        "id": "zero-pluz",
+        "number": 30,
+        "name": "Zero Pluz",
+        "description": "Exenta del deducible en caso de pérdida total por daños materiales, además devuelve las primas netas pagadas por Robo Total, RC por Daños a Terceros L.U.C. y Gastos Médicos Ocupantes si no hubo siniestros durante la vigencia.",
+        "sum_insured": "No aplica",
+        "deductible": "No aplica",
+        "applies_to": ["Autos", "Pick ups", "Camiones hasta 3.5 Toneladas"],
+        "restriction": "Un evento por año. Excluyente con coberturas 29, 31 y 32."
+      },
+      {
+        "id": "zero-total",
+        "number": 31,
+        "name": "Zero Total",
+        "description": "Exenta del pago de deducible en caso de Robo Total o la Pérdida Total por Daños Materiales.",
+        "sum_insured": "No aplica",
+        "deductible": "No aplica",
+        "applies_to": ["Autos", "Pick ups", "Camiones hasta 3.5 Toneladas"],
+        "restriction": "Un evento por año. Excluyente con coberturas 29, 30 y 32."
+      },
+      {
+        "id": "zero-total-pluz",
+        "number": 32,
+        "name": "Zero Total Pluz",
+        "description": "Exenta del deducible en caso de Robo Total o Pérdida Total por daños materiales. Además devuelve las primas netas pagadas por Daños Materiales, Robo Total, RC por Daños a Terceros L.U.C., Gastos Médicos Ocupantes si no hubo siniestros durante la vigencia.",
+        "sum_insured": "No aplica",
+        "deductible": "No aplica",
+        "applies_to": ["Autos", "Pick ups", "Camiones hasta 3.5 Toneladas"],
+        "restriction": "Un evento por año. Excluyente con coberturas 29, 30 y 31."
+      },
+      {
+        "id": "rc-civil-extranjero",
+        "number": 33,
+        "name": "Responsabilidad Civil en el Extranjero",
+        "description": "Cubre la responsabilidad civil que genere el asegurado por el uso del vehículo cuando se encuentre en el extranjero dentro de los Estados Unidos de América y Canadá.",
+        "sum_insured": "No aplica",
+        "deductible": "No aplica",
+        "applies_to": ["Autos", "Pick ups", "Camiones hasta 3.5 Toneladas"]
+      }
+    ]
+  },
+
+  "assistances": {
+    "roadside": [
+      {
+        "name": "Envío y pago de remolque",
+        "description": "En caso de avería y/o accidente, cubre el remolque hasta el taller autorizado más cercano con un límite máximo de 20 UMA en Km. 0 y 65 UMA para viajes.",
+        "highlighted": true
+      },
+      {
+        "name": "Pago y envío de personal calificado",
+        "description": "En pérdida de circulación autónoma por falta de gasolina, acumulador descargado o ponchadura de llantas, envío de personal para corregir el problema en el lugar, limitado a 10 UMA.",
+        "highlighted": true
+      },
+      {
+        "name": "Envío de cerrajero",
+        "description": "En caso de inmovilización del vehículo por extravío de llaves o porque se hayan quedado dentro del mismo. Limitado a 1 evento durante la vigencia de la Póliza.",
+        "highlighted": false
+      },
+      {
+        "name": "Referencia de talleres mecánicos",
+        "description": "Información actualizada sobre los talleres de servicio automotriz autorizados cercanos al lugar de la avería.",
+        "highlighted": true
+      },
+      {
+        "name": "Traslado médico terrestre",
+        "description": "Gestión de traslado del beneficiario al centro hospitalario más cercano, incluso con supervisión médica. No incluye transportación aérea.",
+        "highlighted": true
+      },
+      {
+        "name": "Estancia y desplazamiento por inmovilización del automóvil",
+        "description": "Estancia en hotel (hasta 30 UMA por noche, máximo 2 noches) o transporte al destino (hasta 60-80 UMA).",
+        "highlighted": true
+      },
+      {
+        "name": "Chofer para recoger el automóvil reparado",
+        "description": "Si la reparación es mayor a 36 hrs. y el beneficiario no puede recogerlo, Zurich gestiona un chofer. Limitado a 2 eventos durante la vigencia.",
+        "highlighted": true
+      },
+      {
+        "name": "Gastos de hotel por robo total del automóvil",
+        "description": "Estancia en hotel escogido por el beneficiario, limitado a un máximo de 30 UMA por evento.",
+        "highlighted": true
+      },
+      {
+        "name": "Gastos de transporte por robo total del automóvil",
+        "description": "Renta de automóvil para continuar viaje o regresar a residencia, limitado hasta un máximo de 80 UMA. En caso de imposibilidad, se gestiona taxi, autobús, tren u otro medio, limitado a 20 UMA.",
+        "highlighted": true
+      },
+      {
+        "name": "Custodia de automóvil",
+        "description": "Si la reparación requiere más de 96 horas o si el automóvil ha sido recuperado, Zurich gestiona el depósito y/o custodia, hasta por un máximo de 30 UMA por evento.",
+        "highlighted": true
+      }
+    ],
+    "medical": [
+      {
+        "name": "Gastos de hotel por convalecencia",
+        "description": "Prolongación de estancia en hotel después de hospitalización. Limitado a 25 UMA por día, máximo 5 días naturales consecutivos.",
+        "highlighted": true
+      },
+      {
+        "name": "Boleto redondo para un Familiar y Gastos de Hospedaje",
+        "description": "Si la hospitalización prevé más de 5 días naturales, boleto de ida y vuelta para un familiar y estancia en hotel, limitado a 25 UMA por día, máximo 5 días.",
+        "highlighted": true
+      },
+      {
+        "name": "Traslado médico",
+        "description": "Traslado del beneficiario al centro hospitalario más cercano. Incluye ambulancia aérea si es necesario por razones médicas.",
+        "highlighted": true
+      },
+      {
+        "name": "Traslado en caso de fallecimiento entierro local",
+        "description": "Zurich realiza todas las formalidades necesarias incluyendo trámite legal, traslado del cadáver o cenizas.",
+        "highlighted": false
+      },
+      {
+        "name": "Transmisión de mensajes",
+        "description": "Transmisión de mensajes urgentes derivados de una situación de asistencia.",
+        "highlighted": true
+      },
+      {
+        "name": "Referencia médica",
+        "description": "Asesoría médica y gestión de citas con médicos o centros hospitalarios.",
+        "highlighted": true
+      },
+      {
+        "name": "Servicio relativo a los equipajes",
+        "description": "Localización y transporte de equipajes, asesoría en denuncia de robo o extravío, y gastos de recuperación.",
+        "highlighted": true
+      }
+    ],
+    "legal": [
+      {
+        "name": "Asistencia y Defensa Legal Penal",
+        "description": "Servicios profesionales de abogados 24/7 para asistencia y defensa legal en accidentes automovilísticos: lesiones, homicidio, daños en propiedad ajena.",
+        "highlighted": false
+      },
+      {
+        "name": "Garantías penales, peritajes y amparos",
+        "description": "Tramitar la libertad del asegurado, realizar trámites para la devolución del auto o depositar la garantía (fianza o caución).",
+        "highlighted": false
+      },
+      {
+        "name": "Asistencia legal en caso de robo del vehículo",
+        "description": "Formulación de denuncias necesarias ante la autoridad respectiva con asesor designado por Zurich.",
+        "highlighted": false
+      },
+      {
+        "name": "Asistencia legal en caso de fallecimiento del titular",
+        "description": "Trámites para investigación, entrega del cuerpo, devolución del auto y resolución del Ministerio Público.",
+        "highlighted": false
+      }
+    ]
+  },
+
+  "differentiators": [
+    {
+      "id": "ajuste-virtual",
+      "title": "Ajuste Virtual",
+      "description": "Atención inmediata vía videollamada cuando no existen terceros involucrados, lesionados ni daños mecánicos. Ahorra hasta 1 hora de espera. Recibes un SMS de acceso.",
+      "category": "servicio"
+    },
+    {
+      "id": "proteccion-maz",
+      "title": "Protección MaZ",
+      "description": "Te cubrimos aún cuando manejes otro vehículo con características similares al de tu póliza.",
+      "category": "cobertura"
+    },
+    {
+      "id": "dano-51-75",
+      "title": "Opción reparación o pérdida total",
+      "description": "Cuando el daño de la unidad sea entre 51% y 75% se brinda la opción de reparación o pérdida total por daños materiales.",
+      "category": "cobertura"
+    },
+    {
+      "id": "robo-total-vandalismo",
+      "title": "Cobertura de robo total ante vandalismo y abuso de confianza",
+      "description": "Protección contra robo total incluso en situaciones de vandalismo y abuso de confianza.",
+      "category": "cobertura"
+    },
+    {
+      "id": "cristal-sin-deducible",
+      "title": "Reparación de cristal sin deducible",
+      "description": "Reparación por despostillada de cristal sin deducible cuando se opta por reparación y no sustitución.",
+      "category": "ahorro"
+    },
+    {
+      "id": "polizas-multianuales",
+      "title": "Pólizas Multianuales",
+      "description": "Contamos con pólizas multianuales de hasta 2 años.",
+      "category": "conveniencia"
+    },
+    {
+      "id": "costo-preferencial-taller",
+      "title": "Costo preferencial en taller",
+      "description": "Otorgamos costo preferencial con taller en convenio, en caso de no rebasar el deducible.",
+      "category": "ahorro"
+    },
+    {
+      "id": "garantia-reparacion",
+      "title": "Garantía de reparación 1 año",
+      "description": "Garantía de reparación por 1 año en piezas originales de seguridad.",
+      "category": "calidad"
+    },
+    {
+      "id": "rc-automatica-adaptaciones",
+      "title": "RC automática para adaptaciones",
+      "description": "En vehículos particulares extendemos la RC a adaptaciones sin necesidad de declararlas: tumba burros, estribos, canastillas en techo, porta equipaje, bicicletas y portaequipaje.",
+      "category": "cobertura"
+    },
+    {
+      "id": "acompanamiento-siniestro",
+      "title": "Acompañamiento durante siniestro",
+      "description": "Te acompañamos durante el siniestro incluso al no rebasar el deducible.",
+      "category": "servicio"
+    },
+    {
+      "id": "pago-danos-sin-piezas",
+      "title": "Pago de daños si no hay piezas",
+      "description": "En caso de no haber piezas en el mercado, ofrecemos pago de daños.",
+      "category": "servicio"
+    },
+    {
+      "id": "multas-infracciones",
+      "title": "Cobertura de multas e infracciones",
+      "description": "Cubrimos multas o infracciones asociadas con accidentes de tránsito.",
+      "category": "cobertura"
+    }
+  ],
+
+  "market_context": {
+    "stats": [
+      {
+        "value": "70%",
+        "description": "de los vehículos en México no cuenta con seguro",
+        "source": null
+      },
+      {
+        "value": "170+",
+        "description": "robos diarios de vehículos se reportan en México",
+        "source": "AMIS 2025"
+      },
+      {
+        "value": "25%",
+        "description": "de los reportes de siniestros de auto en los últimos 5 años se presentan en temporada de lluvias",
+        "source": null
+      },
+      {
+        "value": "85%",
+        "description": "de las cotizaciones de seguros de auto en México corresponden a pólizas de cobertura amplia",
+        "source": null
+      },
+      {
+        "value": "58%",
+        "description": "el porcentaje de robo con violencia de auto en México de enero 2024 a enero 2025",
+        "source": "AMIS"
+      }
+    ]
+  },
+
+  "pricing_factors": {
+    "variables": ["Edad", "Género", "Zona geográfica"],
+    "personalization": "Personaliza el costo de acuerdo con el perfil, beneficiando a los clientes con menor índice de riesgo.",
+    "roles": {
+      "contratante": "Persona física o moral que contrata la póliza y está designada en la misma.",
+      "conductor_habitual": "Persona designada en la póliza que con mayor frecuencia utiliza el vehículo."
+    },
+    "payment_frequency": ["Anual", "Semestral", "Trimestral", "Mensual"],
+    "payment_methods": ["Tarjeta de Crédito", "Depósito Bancario", "Efectivo"],
+    "payment_notes": "Contado aplica para MSI (Meses Sin Intereses)."
+  },
+
+  "quoting_requirements": {
+    "cotizacion": [
+      "Edad del propietario",
+      "Género (M/F)",
+      "Dirección completa incluyendo C.P.",
+      "Descripción completa del auto (modelo, marca, tipo y descripción)",
+      "Uso de la unidad",
+      "Paquete de coberturas",
+      "Periodicidad de pago"
+    ],
+    "emision": [
+      "No. de Serie",
+      "No. de Motor",
+      "Placas",
+      "Nombre completo del contratante",
+      "RFC",
+      "Régimen Fiscal",
+      "Uso de CFDI",
+      "Dirección completa",
+      "E-mail",
+      "Teléfono",
+      "Número de identificación",
+      "Datos del beneficiario (nombre y RFC)",
+      "Datos del conductor (nombre y RFC, si es diferente al contratante)"
+    ]
+  },
+
+  "claims_process": {
+    "phone": ["*9191 (desde celular)", "800 288 6911"],
+    "virtual_adjustment": {
+      "description": "Valuación a través de videollamada, ahorrándote hasta 1 hora de espera.",
+      "conditions": "Cuando no existan terceros o autoridades involucradas, lesionados, ni daños mecánicos en el auto.",
+      "process": "Recibirás un SMS con acceso a la videollamada."
+    },
+    "claims_followup": {
+      "email": "siniestros@actinver.com.mx",
+      "phone": "55-1103-6600 Ext. 8531"
+    },
+    "steps": [
+      "Comunícate al *9191 o al 800 288 6911 para reportar el incidente o robo.",
+      "Comparte número de póliza y una descripción breve de los hechos.",
+      "No hagas acuerdos con terceras personas, espera a que llegue tu ajustador."
+    ],
+    "tip": "Te recomendamos siempre tener a la mano tu póliza de auto, puede ser digital en tu móvil y en el móvil de algún familiar o persona de confianza, o impresa en la guantera de tu auto."
+  },
+
+  "contact": {
+    "general": {
+      "phone": "55-1103-6699",
+      "hours_weekdays": "L-V 8:00 a.m. a 12:00 a.m.",
+      "hours_weekends": "Sábados, domingos y días festivos 8:00 a.m. a 8:00 p.m."
+    },
+    "claims": {
+      "phone_cell": "*9191",
+      "phone_toll_free": "800 288 6911",
+      "phone_office": "55-1103-6600 Ext. 8531",
+      "phone_24_7": "55-49-96-04-17",
+      "email": "siniestros@actinver.com.mx"
+    },
+    "website": "actinver.com",
+    "social": "@Actinver"
+  },
+
+  "communication": {
+    "brand_voice": {
+      "tone": "Cercano, confiable, profesional. Habla de protección, no de miedo. Empático con la preocupación del usuario.",
+      "personality": ["Protector", "Accesible", "Moderno", "Confiable"],
+      "language_style": "Segunda persona del singular (tú). Claro, directo, sin tecnicismos innecesarios."
+    },
+    "taglines": [
+      "Tu Auto Seguro Más",
+      "Más que un seguro, somos la protección que te acompaña.",
+      "Un robo pasa en segundos, la tranquilidad de estar protegido dura para siempre.",
+      "El camino está lleno de sorpresas, tu seguridad no debe ser una de ellas.",
+      "Conduce tranquilo, sabiendo que tienes una protección hecha a tu medida.",
+      "Tu seguridad es tan importante como tu tiempo."
+    ],
+    "ctas": [
+      "Contacta a tu asesor Actinver",
+      "Cotiza tu seguro de auto",
+      "Para más información o contratación, contacta a tu Asesor Actinver.",
+      "Llama al 55-1103-6699"
+    ],
+    "key_messages": [
+      "Protección integral dentro y fuera del vehículo.",
+      "Seguro totalmente personalizable.",
+      "Te cubrimos aún cuando manejes otro vehículo (Protección MaZ).",
+      "Ajuste virtual: ahorra tiempo con atención inmediata por videollamada.",
+      "Gastos médicos ilimitados para menores de 12 años.",
+      "Respaldo de Zurich, aseguradora global.",
+      "Distribuido por Actinver, grupo financiero sólido."
+    ],
+    "emotional_triggers": [
+      "Tranquilidad",
+      "Protección familiar",
+      "Seguridad patrimonial",
+      "Confianza",
+      "Conveniencia y ahorro de tiempo"
+    ],
+    "prohibited_claims": [
+      "No se debe prometer cobertura total sin especificar el paquete.",
+      "No debe entenderse como póliza, condiciones generales, cotización o aceptación de riesgo.",
+      "Siempre sujeto a términos y condiciones generales y/o especiales del producto contratado."
+    ]
+  },
+
+  "visual_guidelines": {
+    "pexels_queries": [
+      "person driving car",
+      "modern car road",
+      "family car safety",
+      "car insurance protection",
+      "driving highway mexico",
+      "luxury car night",
+      "man driving luxury car"
+    ],
+    "photography_style": "Carreteras escénicas, autos modernos en movimiento, familias con vehículos, paisajes mexicanos (otoño, costa, bosques). Iluminación cinematográfica, tonos oscuros con acentos cálidos.",
+    "color_palette": {
+      "primary": ["Azul oscuro (Actinver/Zurich)", "Blanco"],
+      "secondary": ["Dorado/Oro (acentos premium)", "Negro (fondos)"],
+      "accent": ["Azul claro (highlights)"]
+    },
+    "typography_style": "Sans-serif moderna, bold para headlines, light para cuerpo. Contraste fuerte en fondos oscuros.",
+    "visual_elements": ["Escudos/shields para iconografía de coberturas", "Línea vertical dorada como separador de sección"],
+    "imagery_keywords": [
+      "auto moderno",
+      "carretera escénica",
+      "familia con auto",
+      "padre e hija",
+      "conducir seguro",
+      "paisaje mexicano",
+      "atardecer",
+      "bosque otoñal",
+      "costa",
+      "montaña"
+    ],
+    "avoid": [
+      "Imágenes de accidentes o daños explícitos",
+      "Tonos agresivos o alarmistas",
+      "Estética genérica corporativa",
+      "Clichés de seguros (manos protectoras, paraguas)"
+    ]
+  },
+
+  "legal_disclaimers": [
+    "Este documento es informativo, no debe de entenderse como póliza, condiciones generales, cotización o aceptación de riesgo.",
+    "Sujeto a términos y condiciones generales y/o especiales del producto contratado.",
+    "Para cualquier duda o aclaración marca 55-1103-6600 ext. 4444 de lunes a viernes de 9:00 a 18:00 h, o al 55-49-96-04-17 las 24 horas del día los 7 días de la semana.",
+    "L.U.C.: Límite Único Combinado.",
+    "UMA: Unidad de Medida y Actualización."
+  ]
+}

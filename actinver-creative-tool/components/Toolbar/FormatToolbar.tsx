@@ -31,7 +31,7 @@ export default function FormatToolbar({ selected, onChange, content, imageUrl, i
             title={`${fmt.label} — ${fmt.width}×${fmt.height}px`}
             className={`
               flex flex-col items-center gap-1.5 transition-all duration-200 group cursor-pointer
-              ${isSelected ? "opacity-100" : "opacity-40 hover:opacity-75"}
+              ${isSelected ? "opacity-100" : "opacity-30 hover:opacity-55"}
             `}
           >
             {/* Thumbnail con preview real */}

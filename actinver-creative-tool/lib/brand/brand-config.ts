@@ -13,7 +13,9 @@ export interface BrandColors {
 
 export interface SceneMapping {
   keywords: string[];
-  scene: string;
+  /** Múltiples escenas para el mismo producto. Se rotan con compositionIndex para
+   *  garantizar variedad real entre generaciones del mismo brief. */
+  scenes: string[];
 }
 
 export interface ProductPreset {

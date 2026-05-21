@@ -2,14 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { generateImageFromPexels, generateImageWithAI } from "@/lib/image-generator";
 import { PieceContent } from "@/lib/templates";
 
+export const maxDuration = 60;
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { product, content, provider, excludeIds } = body as {
+    const { product, message, content, provider, excludeIds, excludeDescriptions, compositionIndex } = body as {
       product: string;
+      message?: string;
       content: PieceContent;
       provider: "pexels" | "ai";
       excludeIds?: string[];
+      excludeDescriptions?: string[];
+      compositionIndex?: number;
     };
 
     if (!content?.title?.trim()) {
@@ -19,10 +24,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const params = { product: product ?? "", content, excludeIds };
-    const result = provider === "ai"
-      ? await generateImageWithAI(params)
-      : await generateImageFromPexels(params);
+    const params = {
+      product: product ?? "",
+      message,
+      content,
+      excludeIds,
+      excludeDescriptions,
+      compositionIndex,
+    };
+    const result =
+      provider === "ai"
+        ? await generateImageWithAI(params)
+        : await generateImageFromPexels(params);
 
     return NextResponse.json(result);
   } catch (err: unknown) {
