@@ -60,7 +60,8 @@ export default function Home() {
   // Zoom del fondo (1 = normal). Se reinicia a 1 cuando llega una imagen nueva.
   const [imageZoom, setImageZoom] = useState<number>(1);
   // Contador de imágenes AI generadas — se usa como compositionIndex para rotar ángulos.
-  const [aiImageCount, setAiImageCount] = useState<number>(0);
+  // Arranca en un valor aleatorio para que cada sesión use un ángulo de composición diferente.
+  const [aiImageCount, setAiImageCount] = useState<number>(() => Math.floor(Math.random() * 8));
 
   // Estados independientes para texto e imagen
   const [contentStatus, setContentStatus] = useState<GenerationStatus>("idle");

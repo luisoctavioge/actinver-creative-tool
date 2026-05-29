@@ -150,7 +150,16 @@ export async function buildAIPrompt(
   const compIdx = (ctx.compositionIndex ?? 0) % COMPOSITION_ANGLES.length;
   const composition = `REQUIRED SHOT TYPE: ${COMPOSITION_ANGLES[compIdx]}`;
 
-  return [scene + ".", composition, baseVisualRules(brand), mood, avoid]
+  // Token de variación: rompe el cache de fal.ai para garantizar imágenes distintas
+  // aunque el resto del prompt sea idéntico. Se elige entre adjetivos neutros de
+  // calidad fotográfica que no alteran la composición pero sí el hash del prompt.
+  const VARIATION_TOKENS = [
+    "ultra-sharp", "tack-sharp focus", "razor-sharp details", "pristine clarity",
+    "impeccable resolution", "crystalline sharpness", "flawless detail", "supreme sharpness",
+  ];
+  const variationToken = VARIATION_TOKENS[Math.floor(Math.random() * VARIATION_TOKENS.length)];
+
+  return [scene + ".", composition, baseVisualRules(brand), mood, avoid, variationToken]
     .filter(Boolean)
     .join(" ")
     .trim();

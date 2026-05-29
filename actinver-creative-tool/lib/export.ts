@@ -145,7 +145,9 @@ function patchBackdropFilter(clonedDoc: Document): void {
       el.style.background =
         "linear-gradient(135deg, rgba(255,255,255,0.14), rgba(255,255,255,0.06))";
     } else if (variant === "badge") {
-      el.style.background = "rgba(10,14,18,0.72)";
+      el.style.background = "linear-gradient(135deg, rgba(20,14,4,0.92), rgba(10,14,18,0.88))";
+      el.style.border = "1px solid rgba(230,199,138,0.60)";
+      el.style.boxShadow = "0 0 12px rgba(230,199,138,0.15)";
     } else {
       el.style.background =
         "linear-gradient(135deg, rgba(10,14,18,0.85), rgba(26,36,51,0.80))";
